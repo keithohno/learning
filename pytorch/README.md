@@ -20,4 +20,9 @@ conda activate ./env
 jupyter lab
 ```
 
-
+## Running examples
+```
+conda activate ./env
+cd ${EXAMPLE_DIR}
+python main.py
+```
