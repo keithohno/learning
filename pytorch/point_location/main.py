@@ -1,4 +1,5 @@
 import torch
+from torch import nn
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
@@ -13,16 +14,6 @@ def random_point():
     return torch.rand(2) * 2 - 1
 
 
-class InCircleModel(torch.nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.layer1 = torch.nn.Linear(2, 10)
-        self.layer2 = torch.nn.Linear(10, 1)
-
-    def forward(self, x):
-        return self.layer2(torch.relu(self.layer1(x)))
-
-
 def run_incircle_model():
     # generate train/test data
     points = torch.stack([random_point() for _ in range(10000)])
@@ -31,8 +22,12 @@ def run_incircle_model():
         points, predictions, test_size=0.2, random_state=23
     )
 
-    # initialize model & optimizer
-    model = InCircleModel()
+    # create model & training objects
+    model = nn.Sequential(
+        nn.Linear(2, 10),
+        nn.ReLU(),
+        nn.Linear(10, 1),
+    )
     optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
     loss_fn = torch.nn.L1Loss()
 
