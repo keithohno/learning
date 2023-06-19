@@ -25,10 +25,7 @@ class InCircleModel(torch.nn.Module):
 def run_incircle_model():
     # generate train/test data
     points = torch.stack([random_point() for _ in range(10000)])
-    predictions = [
-        torch.tensor([1.0]) if is_in_circle(x, y) else torch.tensor([0.0])
-        for x, y in points
-    ]
+    predictions = (points.norm(dim=1) < RADIUS).float().view(-1, 1)
     x_train, y_train = points[:8000], predictions[:8000]
     x_test, y_test = points[8000:], predictions[8000:]
 
@@ -58,19 +55,9 @@ def run_incircle_model():
         model.eval()
         with torch.inference_mode():
             y_test_hat = model(x_test)
-            test_correct = sum(
-                [
-                    (y_hat[0].numpy() > 0.5) == (y[0].numpy() > 0.5)
-                    for y_hat, y in zip(y_test_hat, y_test)
-                ]
-            )
+            test_correct = (y_test_hat.gt(0.5)).eq(y_test.gt(0.5)).sum().item()
             y_train_hat = model(x_train)
-            train_correct = sum(
-                [
-                    (y_hat[0].numpy() > 0.5) == (y[0].numpy() > 0.5)
-                    for y_hat, y in zip(y_train_hat, y_train)
-                ]
-            )
+            train_correct = (y_train_hat.gt(0.5)).eq(y_train.gt(0.5)).sum().item()
 
             epoch_data.append(epoch)
             test_accuracy_data.append(test_correct / 2000)
@@ -80,8 +67,9 @@ def run_incircle_model():
 
 
 if __name__ == "__main__":
+    torch.manual_seed(23)
     epoch_data, test_accuracy_data, train_accuracy_data = run_incircle_model()
     plt.plot(epoch_data, test_accuracy_data, label="test")
     plt.plot(epoch_data, train_accuracy_data, label="train")
     plt.legend()
-    plt.show()
+    plt.savefig("out.png")
