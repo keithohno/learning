@@ -29,7 +29,7 @@ def run_incircle_model():
         nn.Linear(10, 1),
     )
     optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
-    loss_fn = torch.nn.L1Loss()
+    loss_fn = torch.nn.BCEWithLogitsLoss()
 
     # accuracy data for plotting
     epoch_data = []
@@ -51,10 +51,10 @@ def run_incircle_model():
         # evaluate model
         model.eval()
         with torch.inference_mode():
-            y_test_hat = model(x_test)
-            test_correct = (y_test_hat.gt(0.5)).eq(y_test.gt(0.5)).sum().item()
-            y_train_hat = model(x_train)
-            train_correct = (y_train_hat.gt(0.5)).eq(y_train.gt(0.5)).sum().item()
+            y_test_hat = model(x_test).sigmoid().round()
+            test_correct = (y_test_hat).eq(y_test).sum().item()
+            y_train_hat = model(x_train).sigmoid().round()
+            train_correct = (y_train_hat).eq(y_train).sum().item()
 
             epoch_data.append(epoch)
             test_accuracy_data.append(test_correct / 2000)
