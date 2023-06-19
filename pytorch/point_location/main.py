@@ -1,5 +1,6 @@
 import torch
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 
 RADIUS = 0.8
 
@@ -26,8 +27,9 @@ def run_incircle_model():
     # generate train/test data
     points = torch.stack([random_point() for _ in range(10000)])
     predictions = (points.norm(dim=1) < RADIUS).float().view(-1, 1)
-    x_train, y_train = points[:8000], predictions[:8000]
-    x_test, y_test = points[8000:], predictions[8000:]
+    x_train, x_test, y_train, y_test = train_test_split(
+        points, predictions, test_size=0.2, random_state=23
+    )
 
     # initialize model & optimizer
     model = InCircleModel()

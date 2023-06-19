@@ -11,6 +11,7 @@ conda create env
 conda activate ./env
 conda install pytorch torchvision torchaudio pytorch-cuda -c pytorch -c nvidia
 conda install jupyterlab matplotlib
+conda install scikit-learn
 ```
 
 ## Running notebooks
