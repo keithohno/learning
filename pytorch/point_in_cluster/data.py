@@ -1,9 +1,10 @@
 import torch
 
 
-BOUNDARY = 2.5
-CLUSTER_SPACING = 3.0
-CLUSTER_POINTS = 10
+BOUNDARY = 2
+CLUSTER_SPACING = 2.5
+CLUSTER_RADIUS = 1.0
+CLUSTER_POINTS = 40
 ATTEMPTS = 10000
 
 
@@ -33,6 +34,7 @@ def gen_clusters(
     cluster_attempts=ATTEMPTS,
     cluster_spacing=CLUSTER_SPACING,
     cluster_points=CLUSTER_POINTS,
+    cluster_radius=CLUSTER_RADIUS,
     boundary=BOUNDARY,
 ):
     cluster_centers = gen_cluster_centers(cluster_attempts, cluster_spacing, boundary)
@@ -41,7 +43,7 @@ def gen_clusters(
     labels = []
     for i, center in enumerate(cluster_centers):
         clusters.append(
-            gen_cluster_around_center(center, cluster_spacing / 2, cluster_points)
+            gen_cluster_around_center(center, cluster_radius, cluster_points)
         )
         label = [1.0 if i == j else 0.0 for j in range(num_clusters)]
         label = torch.tensor(label)
