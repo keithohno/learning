@@ -36,12 +36,15 @@ def gen_clusters(
     boundary=BOUNDARY,
 ):
     cluster_centers = gen_cluster_centers(cluster_attempts, cluster_spacing, boundary)
+    num_clusters = len(cluster_centers)
     clusters = []
     labels = []
     for i, center in enumerate(cluster_centers):
         clusters.append(
             gen_cluster_around_center(center, cluster_spacing / 2, cluster_points)
         )
-        labels.append(torch.ones(cluster_points) * i)
+        label = [1.0 if i == j else 0.0 for j in range(num_clusters)]
+        label = torch.tensor(label)
+        labels.append(label.repeat(cluster_points).view(-1, num_clusters))
 
     return torch.cat(clusters), torch.cat(labels)
