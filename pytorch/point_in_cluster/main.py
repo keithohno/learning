@@ -8,7 +8,7 @@ import torch
 def train():
     # geenerate data
     points, labels = gen_clusters()
-    num_clusters = int(labels.shape[1])
+    num_clusters = int(labels[-1]) + 1
     xs_train, xs_test, ys_train, ys_test = train_test_split(
         points, labels, test_size=0.2, random_state=23
     )
@@ -48,22 +48,14 @@ def train():
                 ys_train_hat = model(xs_train)
                 ys_test_hat = model(xs_test)
 
-                train_loss = loss_fn(ys_train_hat, ys_train).item()
-                test_loss = loss_fn(ys_test_hat, ys_test).item()
+                train_loss = loss_fn(ys_train_hat, ys_train)
+                test_loss = loss_fn(ys_test_hat, ys_test)
 
                 train_accuracy = (
-                    ys_train_hat.argmax(dim=1)
-                    .eq(ys_train.argmax(dim=1))
-                    .float()
-                    .mean()
-                    .item()
+                    ys_train_hat.argmax(dim=1).eq(ys_train).float().mean().item()
                 )
                 test_accuracy = (
-                    ys_test_hat.argmax(dim=1)
-                    .eq(ys_test.argmax(dim=1))
-                    .float()
-                    .mean()
-                    .item()
+                    ys_test_hat.argmax(dim=1).eq(ys_test).float().mean().item()
                 )
 
                 train_loss_list.append(train_loss)

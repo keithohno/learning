@@ -45,8 +45,6 @@ def gen_clusters(
         clusters.append(
             gen_cluster_around_center(center, cluster_radius, cluster_points)
         )
-        label = [1.0 if i == j else 0.0 for j in range(num_clusters)]
-        label = torch.tensor(label)
-        labels.append(label.repeat(cluster_points).view(-1, num_clusters))
+        labels.append(torch.ones(cluster_points, dtype=torch.long) * i)
 
     return torch.cat(clusters), torch.cat(labels)
