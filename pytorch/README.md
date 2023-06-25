@@ -10,8 +10,7 @@ Verified for Ubuntu 18.04 on WSL2.
 conda create -p env
 conda activate ./env
 conda install pytorch torchvision torchaudio pytorch-cuda -c pytorch -c nvidia
-conda install jupyterlab matplotlib
-conda install scikit-learn
+conda install jupyterlab matplotlib scikit-learn tqdm
 ```
 
 ## Running notebooks

@@ -1,17 +1,18 @@
-from data import gen_clusters
-from torch import nn
-from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
 import torch
+from torch import nn
+from torch.utils.data import DataLoader
+import matplotlib.pyplot as plt
+from tqdm import tqdm
+from data import PointInClusterDataset
 
 
 def train():
-    # geenerate data
-    points, labels = gen_clusters()
-    num_clusters = int(labels[-1]) + 1
-    xs_train, xs_test, ys_train, ys_test = train_test_split(
-        points, labels, test_size=0.2, random_state=23
-    )
+    # generate data
+    train_dataset = PointInClusterDataset(train=True)
+    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    test_dataset = PointInClusterDataset(train=False)
+    test_dataloader = DataLoader(test_dataset, batch_size=32, shuffle=True)
+    num_clusters = train_dataset.num_clusters
 
     # define model
     model = nn.Sequential(
@@ -22,19 +23,19 @@ def train():
         nn.Linear(16, num_clusters),
     )
     loss_fn = nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
+    optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
 
     # data for plotting
     train_loss_list = []
     test_loss_list = []
-    train_accuracy_list = []
-    test_accuracy_list = []
+    train_acc_list = []
+    test_acc_list = []
     epoch_list = []
 
     # training loop
-    for epoch in range(501):
+    for epoch in tqdm(range(1001)):
         model.train()
-        for x, y in zip(xs_train, ys_train):
+        for x, y in test_dataloader:
             y_hat = model(x)
             loss = loss_fn(y_hat, y)
             loss.backward()
@@ -42,26 +43,31 @@ def train():
             optimizer.zero_grad()
 
         # evaluate loss/accuracy
-        if epoch % 50 == 0:
+        if epoch % 100 == 0:
             model.eval()
             with torch.inference_mode():
-                ys_train_hat = model(xs_train)
-                ys_test_hat = model(xs_test)
+                train_loss = 0
+                train_acc = 0
+                for x, y in train_dataloader:
+                    y_hat = model(x)
+                    train_loss += loss_fn(y_hat, y)
+                    train_acc += y_hat.argmax(dim=1).eq(y).float().mean().item()
+                train_loss /= len(train_dataloader)
+                train_acc /= len(train_dataloader)
 
-                train_loss = loss_fn(ys_train_hat, ys_train)
-                test_loss = loss_fn(ys_test_hat, ys_test)
-
-                train_accuracy = (
-                    ys_train_hat.argmax(dim=1).eq(ys_train).float().mean().item()
-                )
-                test_accuracy = (
-                    ys_test_hat.argmax(dim=1).eq(ys_test).float().mean().item()
-                )
+                test_loss = 0
+                test_acc = 0
+                for x, y in test_dataloader:
+                    y_hat = model(x)
+                    test_loss += loss_fn(y_hat, y)
+                    test_acc += y_hat.argmax(dim=1).eq(y).float().mean().item()
+                test_loss /= len(test_dataloader)
+                test_acc /= len(test_dataloader)
 
                 train_loss_list.append(train_loss)
+                train_acc_list.append(train_acc)
                 test_loss_list.append(test_loss)
-                train_accuracy_list.append(train_accuracy)
-                test_accuracy_list.append(test_accuracy)
+                test_acc_list.append(test_acc)
                 epoch_list.append(epoch)
 
     # plotting
@@ -72,8 +78,8 @@ def train():
     plt.savefig("loss.png")
 
     plt.figure()
-    plt.plot(epoch_list, train_accuracy_list, label="training")
-    plt.plot(epoch_list, test_accuracy_list, label="testing")
+    plt.plot(epoch_list, train_acc_list, label="training")
+    plt.plot(epoch_list, test_acc_list, label="testing")
     plt.legend()
     plt.savefig("accuracy.png")
 
