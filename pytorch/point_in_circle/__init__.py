@@ -63,10 +63,10 @@ def run_incircle_model():
     return epoch_data, test_accuracy_data, train_accuracy_data
 
 
-if __name__ == "__main__":
+def run():
     torch.manual_seed(23)
     epoch_data, test_accuracy_data, train_accuracy_data = run_incircle_model()
     plt.plot(epoch_data, test_accuracy_data, label="test")
     plt.plot(epoch_data, train_accuracy_data, label="train")
     plt.legend()
-    plt.savefig("out.png")
+    plt.savefig("point_in_circle/out.png")

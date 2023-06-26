@@ -13,16 +13,8 @@ conda install pytorch torchvision torchaudio pytorch-cuda -c pytorch -c nvidia
 conda install jupyterlab matplotlib scikit-learn tqdm
 ```
 
-## Running notebooks
-
-```
-conda activate ./env
-jupyter lab
-```
-
 ## Running examples
 ```
 conda activate ./env
-cd ${EXAMPLE_DIR}
 python main.py
 ```

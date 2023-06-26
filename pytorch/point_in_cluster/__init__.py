@@ -3,7 +3,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from data import PointInClusterDataset
+from .data import PointInClusterDataset
 
 
 def train():
@@ -75,15 +75,15 @@ def train():
     plt.plot(epoch_list, train_loss_list, label="training")
     plt.plot(epoch_list, test_loss_list, label="testing")
     plt.legend()
-    plt.savefig("loss.png")
+    plt.savefig("point_in_cluster/loss.png")
 
     plt.figure()
     plt.plot(epoch_list, train_acc_list, label="training")
     plt.plot(epoch_list, test_acc_list, label="testing")
     plt.legend()
-    plt.savefig("accuracy.png")
+    plt.savefig("point_in_cluster/accuracy.png")
 
 
-if __name__ == "__main__":
+def run():
     torch.manual_seed(23)
     train()

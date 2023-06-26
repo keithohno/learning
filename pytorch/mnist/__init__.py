@@ -46,7 +46,7 @@ def train(model, loss_fn, optimizer, train_dataloader, test_dataloader):
     return epoch_list, train_loss_list, train_acc_list, test_loss_list, test_acc_list
 
 
-if __name__ == "__main__":
+def run():
     torch.manual_seed(23)
     train_dataloader, test_dataloader = get_dataloaders()
 
