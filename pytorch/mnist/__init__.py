@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
 from tqdm import tqdm
-from helpers import eval_model, plot_model_criteria
+from helpers import eval_model, plot_loss_accuracy
 
 
 def get_dataloaders():
@@ -18,6 +18,8 @@ def get_dataloaders():
 
 
 def run_training_pipeline(model, model_name):
+    print(f"Running training pipeline for model: {model_name}")
+
     torch.manual_seed(23)
     train_dataloader, test_dataloader = get_dataloaders()
 
@@ -30,7 +32,7 @@ def run_training_pipeline(model, model_name):
     test_loss_list = []
     test_acc_list = []
 
-    for epoch in tqdm(range(20)):
+    for epoch in tqdm(range(50)):
         model.train()
         for x, y in train_dataloader:
             y_hat = model(x)
@@ -50,11 +52,13 @@ def run_training_pipeline(model, model_name):
             test_loss_list.append(test_loss.detach())
             test_acc_list.append(test_acc.detach())
 
-    plot_model_criteria(
-        train_loss_list, test_loss_list, epoch_list, f"mnist/{model_name}_loss.png"
-    )
-    plot_model_criteria(
-        train_acc_list, test_acc_list, epoch_list, f"mnist/{model_name}_acc.png"
+    plot_loss_accuracy(
+        train_loss_list,
+        test_loss_list,
+        train_acc_list,
+        test_acc_list,
+        epoch_list,
+        f"mnist/{model_name}.png",
     )
 
 
@@ -62,5 +66,13 @@ def run():
     model_linear = nn.Sequential(
         nn.Flatten(), nn.Linear(784, 128), nn.ReLU(), nn.Linear(128, 10)
     )
+    model_convolution = nn.Sequential(
+        nn.Conv2d(1, 6, 3),
+        nn.Flatten(),
+        nn.Linear(4056, 128),
+        nn.ReLU(),
+        nn.Linear(128, 10),
+    )
 
     run_training_pipeline(model_linear, "linear")
+    run_training_pipeline(model_convolution, "convolution")

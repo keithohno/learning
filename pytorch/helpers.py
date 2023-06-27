@@ -13,9 +13,16 @@ def eval_model(model, dataloader, loss_fn):
     return loss, acc
 
 
-def plot_model_criteria(train_list, test_list, epoch_list, path):
-    plt.figure()
-    plt.plot(epoch_list, train_list, label="training")
-    plt.plot(epoch_list, test_list, label="testing")
-    plt.legend()
+def plot_loss_accuracy(
+    train_loss_list, test_loss_list, train_acc_list, test_acc_list, epoch_list, path
+):
+    _, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+    ax1.plot(epoch_list, train_loss_list, label="training")
+    ax1.plot(epoch_list, test_loss_list, label="testing")
+    ax1.set_title("Loss")
+    ax1.legend()
+    ax2.plot(epoch_list, train_acc_list, label="training")
+    ax2.plot(epoch_list, test_acc_list, label="testing")
+    ax2.set_title("Accuracy")
+    ax2.legend()
     plt.savefig(path)

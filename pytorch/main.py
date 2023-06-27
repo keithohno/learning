@@ -8,6 +8,8 @@ print(
 
 selection = input("Make a selection (default 3): ")
 
+print()
+
 if selection == "1":
     run_point_in_circle()
 elif selection == "2":
