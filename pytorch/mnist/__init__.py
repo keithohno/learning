@@ -32,7 +32,7 @@ def run_training_pipeline(model, model_name):
     test_loss_list = []
     test_acc_list = []
 
-    for epoch in tqdm(range(20)):
+    for epoch in tqdm(range(25)):
         model.train()
         for x, y in train_dataloader:
             y_hat = model(x)
@@ -66,15 +66,28 @@ def run():
     model_linear = nn.Sequential(
         nn.Flatten(), nn.Linear(784, 128), nn.ReLU(), nn.Linear(128, 10)
     )
-    model_convolution = nn.Sequential(
-        nn.Conv2d(in_channels=1, out_channels=6, kernel_size=3),
+
+    model_conv_linear = nn.Sequential(
+        nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3, padding=1),
         nn.MaxPool2d(kernel_size=2),
         nn.ReLU(),
         nn.Flatten(),
-        nn.Linear(1014, 128),
+        nn.Linear(1568, 128),
         nn.ReLU(),
         nn.Linear(128, 10),
     )
 
+    model_conv_conv = nn.Sequential(
+        nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3, padding=1),
+        nn.MaxPool2d(kernel_size=2),
+        nn.ReLU(),
+        nn.Conv2d(in_channels=8, out_channels=8, kernel_size=3, padding=1),
+        nn.MaxPool2d(kernel_size=2),
+        nn.ReLU(),
+        nn.Flatten(),
+        nn.Linear(392, 10),
+    )
+
     run_training_pipeline(model_linear, "linear")
-    run_training_pipeline(model_convolution, "conv_linear")
+    run_training_pipeline(model_conv_linear, "conv_linear")
+    run_training_pipeline(model_conv_conv, "conv_conv")
