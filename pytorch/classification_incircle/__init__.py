@@ -69,4 +69,4 @@ def run():
     plt.plot(epoch_data, test_accuracy_data, label="test")
     plt.plot(epoch_data, train_accuracy_data, label="train")
     plt.legend()
-    plt.savefig("point_in_circle/out.png")
+    plt.savefig("classification_incircle/out.png")

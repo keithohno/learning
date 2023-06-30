@@ -75,13 +75,13 @@ def train():
     plt.plot(epoch_list, train_loss_list, label="training")
     plt.plot(epoch_list, test_loss_list, label="testing")
     plt.legend()
-    plt.savefig("point_in_cluster/loss.png")
+    plt.savefig("classification_clusters/loss.png")
 
     plt.figure()
     plt.plot(epoch_list, train_acc_list, label="training")
     plt.plot(epoch_list, test_acc_list, label="testing")
     plt.legend()
-    plt.savefig("point_in_cluster/accuracy.png")
+    plt.savefig("classification_clusters/accuracy.png")
 
 
 def run():

@@ -1,18 +1,21 @@
-from mnist import run as run_mnist
-from point_in_circle import run as run_point_in_circle
-from point_in_cluster import run as run_point_in_cluster
+from classification_incircle import run as run0
+from classification_clusters import run as run1
+from classification_mnist import run as run2
+from autoencoder_mnist import run as run3
 
 print(
-    "\nExamples:\n" "  (1) point_in_circle\n" "  (2) point_in_cluster\n" "  (3) mnist\n"
+    "\nExamples:\n" "  (0) classification_circle\n" "  (1) classification_clusters\n" "  (2) classification_mnist\n" "  (3) autoencoder_mnist\n"
 )
 
 selection = input("Make a selection (default 3): ")
 
 print()
 
-if selection == "1":
-    run_point_in_circle()
+if selection == "0":
+    run0()
+elif selection == "1":
+    run1()
 elif selection == "2":
-    run_point_in_cluster()
+    run2()
 else:
-    run_mnist()
+    run3()

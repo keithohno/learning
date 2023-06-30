@@ -58,7 +58,7 @@ def run_training_pipeline(model, model_name):
         train_acc_list,
         test_acc_list,
         epoch_list,
-        f"mnist/{model_name}.png",
+        f"classification_mnist/{model_name}.png",
     )
 
 
