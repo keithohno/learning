@@ -20,7 +20,6 @@ def get_dataloaders():
 def run_training_pipeline(model, model_name):
     print(f"Running training pipeline for model: {model_name}")
 
-    torch.manual_seed(23)
     train_dataloader, test_dataloader = get_dataloaders()
 
     loss_fn = nn.CrossEntropyLoss()
@@ -63,6 +62,8 @@ def run_training_pipeline(model, model_name):
 
 
 def run():
+    torch.manual_seed(23)
+
     model_linear = nn.Sequential(
         nn.Flatten(), nn.Linear(784, 128), nn.ReLU(), nn.Linear(128, 10)
     )
