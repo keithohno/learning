@@ -6,6 +6,8 @@ from torchvision.transforms import ToTensor
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
+from .models import ModelV1
+
 
 def get_dataloaders():
     train_dataset = MNIST("datasets", download=True, transform=ToTensor())
@@ -22,28 +24,7 @@ def run():
 
     train_dataloader, test_dataloader = get_dataloaders()
 
-    model = nn.Sequential(
-        nn.Conv2d(1, 8, kernel_size=3),
-        nn.MaxPool2d(2),
-        nn.SELU(),
-        nn.Conv2d(8, 8, kernel_size=3),
-        nn.MaxPool2d(2, padding=1),
-        nn.SELU(),
-        nn.Conv2d(8, 8, kernel_size=3),
-        nn.MaxPool2d(2),
-        nn.SELU(),
-        nn.Flatten(),
-        nn.Linear(32, 3),
-        nn.SELU(),
-        nn.Linear(3, 32),
-        nn.Unflatten(1, (8, 2, 2)),
-        nn.ConvTranspose2d(8, 8, kernel_size=4, stride=3),
-        nn.SELU(),
-        nn.ConvTranspose2d(8, 8, kernel_size=2, stride=2),
-        nn.SELU(),
-        nn.ConvTranspose2d(8, 1, kernel_size=2, stride=2),
-        nn.SELU(),
-    )
+    model = ModelV1()
 
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-2)
