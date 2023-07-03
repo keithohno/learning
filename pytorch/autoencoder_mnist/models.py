@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 
 
@@ -18,8 +19,9 @@ class AutoEncoder(nn.Module):
 
 
 class ModelV1(AutoEncoder):
-    def __init__(self, activation=nn.SELU()):
+    def __init__(self, activation=nn.SELU(), seed=23):
         super().__init__()
+        torch.manual_seed(seed)
         self.encoder = nn.Sequential(
             nn.Conv2d(1, 8, kernel_size=3),
             nn.MaxPool2d(2),

@@ -19,12 +19,10 @@ def get_dataloaders():
     return train_dataloader, test_dataloader
 
 
-def run():
-    torch.manual_seed(23)
+def run_training_pipeline(model, model_name, seed=23):
+    torch.manual_seed(seed)
 
     train_dataloader, test_dataloader = get_dataloaders()
-
-    model = ModelV1()
 
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-2)
@@ -32,6 +30,7 @@ def run():
     loss_list = []
     baseline_loss_list = []
 
+    # training loop
     for _ in tqdm(range(50)):
         model.train()
         for x, _ in train_dataloader:
@@ -55,7 +54,25 @@ def run():
                 loss += loss_fn(x_hat, x.flip(0))
             baseline_loss_list.append(loss / len(test_dataloader))
 
+    # save and plot
+    torch.save(model.state_dict(), f"autoencoder_mnist/data/{model_name}.pt")
+
     plt.plot(loss_list, label="loss")
     plt.plot(baseline_loss_list, label="baseline")
     plt.legend()
-    plt.savefig("autoencoder_mnist/loss.png")
+    plt.savefig(f"autoencoder_mnist/results/{model_name}_loss.png")
+
+
+def load_state_dict(model_name):
+    try:
+        return torch.load(f"autoencoder_mnist/data/{model_name}.pt")
+    except:
+        return None
+
+
+def run():
+    model = ModelV1()
+    if (state_dict := load_state_dict("ModelV1")) is not None:
+        model.load_state_dict(state_dict)
+    else:
+        run_training_pipeline(model, "ModelV1")
