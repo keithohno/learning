@@ -40,9 +40,17 @@ def run_training_pipeline(model, train_dataset, test_dataset, seed=23):
 
     torch.save(model.state_dict(), f"autoencoder_mnist/data/{model.name()}.pt")
 
-    plt.plot(loss_list, label="loss")
-    plt.legend()
-    plt.savefig(f"autoencoder_mnist/results/{model.name()}_loss.png")
+    return loss_list
+
+
+def plot_loss_charts(models, loss_lists, colors):
+    fig, ax = plt.subplots()
+    for i in range(len(models)):
+        ax.plot(loss_lists[i], color=colors[i], label=models[i].name())
+    ax.legend()
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("Loss")
+    fig.savefig("autoencoder_mnist/results/loss.png")
 
 
 def plot_sample_reconstruction(model, test_dataset, seed=23):
@@ -97,9 +105,18 @@ def run():
     train_dataset = MNIST("datasets", download=True, transform=ToTensor())
     test_dataset = MNIST("datasets", download=True, transform=ToTensor(), train=False)
 
-    model = ModelV1(3)
-    if not (try_load_model(model)):
-        run_training_pipeline(model, train_dataset, test_dataset)
+    models = []
+    latent_dims = [3, 5, 7, 10, 15]
+    for latent_dim in latent_dims:
+        models.append(ModelV1(latent_dim))
 
-    plot_sample_reconstruction(model, test_dataset)
-    plot_latent_space(model)
+    loss_lists = []
+    colors = [
+        (x / len(models) / 2 + 0.5, x / len(models) / 2 + 0.5, 1.0)
+        for x in range(len(models))
+    ]
+    for model in models:
+        if not (try_load_model(model)):
+            loss_lists.append(run_training_pipeline(model, train_dataset, test_dataset))
+
+    plot_loss_charts(models, loss_lists, colors)
