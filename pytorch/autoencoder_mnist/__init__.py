@@ -71,6 +71,29 @@ def plot_sample_reconstruction(model, model_name, test_dataset, seed=23):
     fig.savefig(f"autoencoder_mnist/results/{model_name}_sample.png")
 
 
+def plot_latent_space(model, model_name, test_dataset, seed=23):
+    torch.manual_seed(seed)
+    fig, axs = plt.subplots(4, 12)
+    for row in range(4):
+        for col in range(4):
+            vec1 = torch.tensor([0.3 * row, 0.3 * col, 0.0])
+            vec2 = torch.tensor([0.3 * row, 0.0, 0.3 * col])
+            vec3 = torch.tensor([0.0, 0.3 * row, 0.3 * col])
+
+            pred1 = model.decoder(vec1).detach().numpy().squeeze()
+            pred2 = model.decoder(vec2).detach().numpy().squeeze()
+            pred3 = model.decoder(vec3).detach().numpy().squeeze()
+
+            axs[row, col].imshow(pred1, cmap="gray")
+            axs[row, col + 4].imshow(pred2, cmap="gray")
+            axs[row, col + 8].imshow(pred3, cmap="gray")
+
+    for ax in axs.flatten():
+        ax.axis("off")
+
+    fig.savefig(f"autoencoder_mnist/results/{model_name}_latent.png")
+
+
 def load_state_dict(model_name):
     try:
         return torch.load(f"autoencoder_mnist/data/{model_name}.pt")
@@ -89,3 +112,4 @@ def run():
         run_training_pipeline(model, "ModelV1", train_dataset, test_dataset)
 
     plot_sample_reconstruction(model, "ModelV1", test_dataset)
+    plot_latent_space(model, "ModelV1", test_dataset)
