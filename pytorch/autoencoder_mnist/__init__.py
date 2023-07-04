@@ -9,7 +9,7 @@ from tqdm import tqdm
 from .models import ModelV1
 
 
-def run_training_pipeline(model, model_name, train_dataset, test_dataset, seed=23):
+def run_training_pipeline(model, train_dataset, test_dataset, seed=23):
     torch.manual_seed(seed)
 
     train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
@@ -19,7 +19,6 @@ def run_training_pipeline(model, model_name, train_dataset, test_dataset, seed=2
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-2)
 
     loss_list = []
-    baseline_loss_list = []
 
     # training loop
     for _ in tqdm(range(50)):
@@ -39,22 +38,14 @@ def run_training_pipeline(model, model_name, train_dataset, test_dataset, seed=2
                 loss += loss_fn(x_hat, x)
             loss_list.append(loss / len(test_dataloader))
 
-            loss = 0
-            for x, _ in test_dataloader:
-                x_hat = model(x)
-                loss += loss_fn(x_hat, x.flip(0))
-            baseline_loss_list.append(loss / len(test_dataloader))
-
-    # save and plot
-    torch.save(model.state_dict(), f"autoencoder_mnist/data/{model_name}.pt")
+    torch.save(model.state_dict(), f"autoencoder_mnist/data/{model.name()}.pt")
 
     plt.plot(loss_list, label="loss")
-    plt.plot(baseline_loss_list, label="baseline")
     plt.legend()
-    plt.savefig(f"autoencoder_mnist/results/{model_name}_loss.png")
+    plt.savefig(f"autoencoder_mnist/results/{model.name()}_loss.png")
 
 
-def plot_sample_reconstruction(model, model_name, test_dataset, seed=23):
+def plot_sample_reconstruction(model, test_dataset, seed=23):
     torch.manual_seed(seed)
     fig, axs = plt.subplots(4, 8)
     samples, _ = next(iter(DataLoader(test_dataset, batch_size=16, shuffle=True)))
@@ -68,10 +59,10 @@ def plot_sample_reconstruction(model, model_name, test_dataset, seed=23):
             axs[row, col].axis("off")
             axs[row, col + 4].axis("off")
 
-    fig.savefig(f"autoencoder_mnist/results/{model_name}_sample.png")
+    fig.savefig(f"autoencoder_mnist/results/{model.name()}_sample.png")
 
 
-def plot_latent_space(model, model_name, test_dataset, seed=23):
+def plot_latent_space(model, seed=23):
     torch.manual_seed(seed)
     fig, axs = plt.subplots(4, 12)
     for row in range(4):
@@ -91,25 +82,24 @@ def plot_latent_space(model, model_name, test_dataset, seed=23):
     for ax in axs.flatten():
         ax.axis("off")
 
-    fig.savefig(f"autoencoder_mnist/results/{model_name}_latent.png")
+    fig.savefig(f"autoencoder_mnist/results/{model.name()}_latent.png")
 
 
-def load_state_dict(model_name):
+def try_load_model(model):
     try:
-        return torch.load(f"autoencoder_mnist/data/{model_name}.pt")
+        torch.load(f"autoencoder_mnist/data/{model.name()}.pt")
     except:
-        return None
+        return False
+    return True
 
 
 def run():
     train_dataset = MNIST("datasets", download=True, transform=ToTensor())
     test_dataset = MNIST("datasets", download=True, transform=ToTensor(), train=False)
 
-    model = ModelV1()
-    if (state_dict := load_state_dict("ModelV1")) is not None:
-        model.load_state_dict(state_dict)
-    else:
-        run_training_pipeline(model, "ModelV1", train_dataset, test_dataset)
+    model = ModelV1(3)
+    if not (try_load_model(model)):
+        run_training_pipeline(model, train_dataset, test_dataset)
 
-    plot_sample_reconstruction(model, "ModelV1", test_dataset)
-    plot_latent_space(model, "ModelV1", test_dataset)
+    plot_sample_reconstruction(model, test_dataset)
+    plot_latent_space(model)

@@ -17,9 +17,12 @@ class AutoEncoder(nn.Module):
     def decode(self, x):
         return self.decoder(x)
 
+    def name(self):
+        return f"{self.__class__.__name__} default"
+
 
 class ModelV1(AutoEncoder):
-    def __init__(self, activation=nn.SELU(), seed=23):
+    def __init__(self, latent_dim, activation=nn.SELU(), seed=23):
         super().__init__()
         torch.manual_seed(seed)
         self.encoder = nn.Sequential(
@@ -33,11 +36,11 @@ class ModelV1(AutoEncoder):
             nn.MaxPool2d(2),
             activation,
             nn.Flatten(),
-            nn.Linear(32, 3),
+            nn.Linear(32, latent_dim),
             activation,
         )
         self.decoder = nn.Sequential(
-            nn.Linear(3, 32),
+            nn.Linear(latent_dim, 32),
             nn.Unflatten(-1, (8, 2, 2)),
             nn.ConvTranspose2d(8, 8, kernel_size=4, stride=3),
             activation,
@@ -46,3 +49,8 @@ class ModelV1(AutoEncoder):
             nn.ConvTranspose2d(8, 1, kernel_size=2, stride=2),
             activation,
         )
+        self.latent_dim = latent_dim
+        self.activation = activation
+
+    def name(self):
+        return f"ModelV1-{self.latent_dim}-{self.activation.__class__.__name__}"
