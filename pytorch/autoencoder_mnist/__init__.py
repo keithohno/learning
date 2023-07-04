@@ -53,44 +53,28 @@ def plot_loss_charts(models, loss_lists, colors):
     fig.savefig("autoencoder_mnist/results/loss.png")
 
 
-def plot_sample_reconstruction(model, test_dataset, seed=23):
+def plot_sample_reconstruction(models, test_dataset, seed=23):
+    SAMPLES = 8
     torch.manual_seed(seed)
-    fig, axs = plt.subplots(4, 8)
-    samples, _ = next(iter(DataLoader(test_dataset, batch_size=16, shuffle=True)))
-    reconstructions = model(samples).detach().numpy()
-    for row in range(4):
-        for col in range(4):
-            img = samples[row * 4 + col].squeeze()
-            img_hat = reconstructions[row * 4 + col].squeeze()
-            axs[row, col].imshow(img, cmap="gray")
-            axs[row, col + 4].imshow(img_hat, cmap="gray")
-            axs[row, col].axis("off")
-            axs[row, col + 4].axis("off")
+    fig, axs = plt.subplots(SAMPLES, len(models) + 1, figsize=(16, 16))
+    x, _ = next(iter(DataLoader(test_dataset, batch_size=SAMPLES, shuffle=True)))
 
-    fig.savefig(f"autoencoder_mnist/results/{model.name()}_sample.png")
+    for i, model in enumerate(models):
+        model.eval()
+        x_hat = model(x).detach().numpy()
+        axs[0, i + 1].set_title(model.name())
+        for j in range(SAMPLES):
+            img = x_hat[j].squeeze()
+            axs[j, i + 1].imshow(img, cmap="gray")
+            axs[j, i + 1].axis("off")
 
+    axs[0, 0].set_title("Original")
+    for j in range(SAMPLES):
+        img = x[j].squeeze()
+        axs[j, 0].imshow(img, cmap="gray")
+        axs[j, 0].axis("off")
 
-def plot_latent_space(model, seed=23):
-    torch.manual_seed(seed)
-    fig, axs = plt.subplots(4, 12)
-    for row in range(4):
-        for col in range(4):
-            vec1 = torch.tensor([0.3 * row, 0.3 * col, 0.0])
-            vec2 = torch.tensor([0.3 * row, 0.0, 0.3 * col])
-            vec3 = torch.tensor([0.0, 0.3 * row, 0.3 * col])
-
-            pred1 = model.decoder(vec1).detach().numpy().squeeze()
-            pred2 = model.decoder(vec2).detach().numpy().squeeze()
-            pred3 = model.decoder(vec3).detach().numpy().squeeze()
-
-            axs[row, col].imshow(pred1, cmap="gray")
-            axs[row, col + 4].imshow(pred2, cmap="gray")
-            axs[row, col + 8].imshow(pred3, cmap="gray")
-
-    for ax in axs.flatten():
-        ax.axis("off")
-
-    fig.savefig(f"autoencoder_mnist/results/{model.name()}_latent.png")
+    fig.savefig(f"autoencoder_mnist/results/samples.png")
 
 
 def try_load_model(model):
@@ -119,4 +103,6 @@ def run():
         if not (try_load_model(model)):
             loss_lists.append(run_training_pipeline(model, train_dataset, test_dataset))
 
-    plot_loss_charts(models, loss_lists, colors)
+    if loss_lists:
+        plot_loss_charts(models, loss_lists, colors)
+    plot_sample_reconstruction(models, test_dataset)
