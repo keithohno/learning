@@ -38,7 +38,7 @@ class ModelV1(AutoEncoder):
         )
         self.decoder = nn.Sequential(
             nn.Linear(3, 32),
-            nn.Unflatten(1, (8, 2, 2)),
+            nn.Unflatten(-1, (8, 2, 2)),
             nn.ConvTranspose2d(8, 8, kernel_size=4, stride=3),
             activation,
             nn.ConvTranspose2d(8, 8, kernel_size=2, stride=2),

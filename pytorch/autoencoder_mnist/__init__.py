@@ -9,20 +9,11 @@ from tqdm import tqdm
 from .models import ModelV1
 
 
-def get_dataloaders():
-    train_dataset = MNIST("datasets", download=True, transform=ToTensor())
-    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-
-    test_dataset = MNIST("datasets", download=True, transform=ToTensor(), train=False)
-    test_dataloader = DataLoader(test_dataset, batch_size=32, shuffle=True)
-
-    return train_dataloader, test_dataloader
-
-
-def run_training_pipeline(model, model_name, seed=23):
+def run_training_pipeline(model, model_name, train_dataset, test_dataset, seed=23):
     torch.manual_seed(seed)
 
-    train_dataloader, test_dataloader = get_dataloaders()
+    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    test_dataloader = DataLoader(test_dataset, batch_size=32, shuffle=True)
 
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-2)
@@ -63,6 +54,23 @@ def run_training_pipeline(model, model_name, seed=23):
     plt.savefig(f"autoencoder_mnist/results/{model_name}_loss.png")
 
 
+def plot_sample_reconstruction(model, model_name, test_dataset, seed=23):
+    torch.manual_seed(seed)
+    fig, axs = plt.subplots(4, 8)
+    samples, _ = next(iter(DataLoader(test_dataset, batch_size=16, shuffle=True)))
+    reconstructions = model(samples).detach().numpy()
+    for row in range(4):
+        for col in range(4):
+            img = samples[row * 4 + col].squeeze()
+            img_hat = reconstructions[row * 4 + col].squeeze()
+            axs[row, col].imshow(img, cmap="gray")
+            axs[row, col + 4].imshow(img_hat, cmap="gray")
+            axs[row, col].axis("off")
+            axs[row, col + 4].axis("off")
+
+    fig.savefig(f"autoencoder_mnist/results/{model_name}_sample.png")
+
+
 def load_state_dict(model_name):
     try:
         return torch.load(f"autoencoder_mnist/data/{model_name}.pt")
@@ -71,8 +79,13 @@ def load_state_dict(model_name):
 
 
 def run():
+    train_dataset = MNIST("datasets", download=True, transform=ToTensor())
+    test_dataset = MNIST("datasets", download=True, transform=ToTensor(), train=False)
+
     model = ModelV1()
     if (state_dict := load_state_dict("ModelV1")) is not None:
         model.load_state_dict(state_dict)
     else:
-        run_training_pipeline(model, "ModelV1")
+        run_training_pipeline(model, "ModelV1", train_dataset, test_dataset)
+
+    plot_sample_reconstruction(model, "ModelV1", test_dataset)
