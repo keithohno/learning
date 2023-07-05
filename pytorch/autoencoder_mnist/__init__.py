@@ -7,10 +7,11 @@ import matplotlib.pyplot as plt
 import os
 from tqdm import tqdm
 
-from .models import ModelV1
+from .models import ModelV1, ModelV2
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+EPOCHS = 50
 
 
 # runs train -> plot pipeline for a list of models
@@ -27,6 +28,8 @@ def run_pipeline_for_models(models, train_dataset, test_dataset):
 
 # trains/saves model and reports loss
 def train(model, train_dataset, test_dataset, seed=23):
+    print("Training", model.name(), model.spec())
+
     torch.manual_seed(seed)
 
     train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
@@ -38,7 +41,7 @@ def train(model, train_dataset, test_dataset, seed=23):
     loss_list = []
 
     # training loop
-    for _ in tqdm(range(50)):
+    for _ in tqdm(range(EPOCHS)):
         model.train()
         for x, _ in train_dataloader:
             x = x.to(DEVICE)
@@ -57,7 +60,7 @@ def train(model, train_dataset, test_dataset, seed=23):
                 loss += loss_fn(x_hat, x).item()
             loss_list.append(loss / len(test_dataloader))
 
-    torch.save(model.state_dict(), f"{DIR}/data/{model.name()}.pt")
+    torch.save(model.state_dict(), f"{DIR}/data/{model.name()}-{model.spec()}.pt")
 
     return loss_list
 
@@ -69,14 +72,13 @@ def plot_loss_charts(models, loss_lists):
         for x in range(len(models))
     ]
 
-    fig, ax = plt.subplots()
+    plt.figure()
     for i in range(len(models)):
-        loss_list = [x.item() for x in loss_lists[i]]
-        ax.plot(loss_list, color=colors[i], label=models[i].name())
-    ax.legend()
-    ax.set_xlabel("Epoch")
-    ax.set_ylabel("Loss")
-    fig.savefig(f"{DIR}/results/loss.png")
+        plt.plot(loss_lists[i], color=colors[i], label=models[i].spec())
+    plt.legend()
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.savefig(f"{DIR}/results/{models[0].name()}_loss.png")
 
 
 # samples dataset and plots original and reconstructed images
@@ -90,7 +92,7 @@ def plot_sample_reconstruction(models, test_dataset, seed=23):
     for i, model in enumerate(models):
         model.eval()
         x_hat = model(x).detach()
-        axs[0, i + 1].set_title(model.name())
+        axs[0, i + 1].set_title(model.spec())
         for j in range(SAMPLES):
             img = x_hat[j].squeeze()
             axs[j, i + 1].imshow(img.cpu(), cmap="gray")
@@ -102,12 +104,12 @@ def plot_sample_reconstruction(models, test_dataset, seed=23):
         axs[j, 0].imshow(img.cpu(), cmap="gray")
         axs[j, 0].axis("off")
 
-    fig.savefig(f"{DIR}/results/samples.png")
+    fig.savefig(f"{DIR}/results/{model.name()}_samples.png")
 
 
 def try_load_model(model):
     try:
-        state_dict = torch.load(f"{DIR}/data/{model.name()}.pt")
+        state_dict = torch.load(f"{DIR}/data/{model.name()}-{model.spec()}.pt")
         model.load_state_dict(state_dict)
     except:
         return False
@@ -123,4 +125,12 @@ def run():
     latent_dims = [3, 5, 7, 10, 15]
     for latent_dim in latent_dims:
         models.append(ModelV1(latent_dim).to(DEVICE))
+    run_pipeline_for_models(models, train_dataset, test_dataset)
+
+    # ModelV2 block
+    models = []
+    latent_dims = [8, 16, 32]
+    for latent_dim in latent_dims:
+        models.append(ModelV2(latent_dim).to(DEVICE))
+        models.append(ModelV2(latent_dim, activation=nn.ReLU()).to(DEVICE))
     run_pipeline_for_models(models, train_dataset, test_dataset)
