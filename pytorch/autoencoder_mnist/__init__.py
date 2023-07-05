@@ -4,10 +4,12 @@ from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
 import matplotlib.pyplot as plt
+import os
 from tqdm import tqdm
 
 from .models import ModelV1
 
+DIR = os.path.dirname(os.path.realpath(__file__))
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
@@ -43,7 +45,7 @@ def run_training_pipeline(model, train_dataset, test_dataset, seed=23):
                 loss += loss_fn(x_hat, x).item()
             loss_list.append(loss / len(test_dataloader))
 
-    torch.save(model.state_dict(), f"autoencoder_mnist/data/{model.name()}.pt")
+    torch.save(model.state_dict(), f"{DIR}/data/{model.name()}.pt")
 
     return loss_list
 
@@ -57,7 +59,7 @@ def plot_loss_charts(models, loss_lists, colors):
     ax.legend()
     ax.set_xlabel("Epoch")
     ax.set_ylabel("Loss")
-    fig.savefig("autoencoder_mnist/results/loss.png")
+    fig.savefig(f"{DIR}/results/loss.png")
 
 
 # samples dataset and plots original and reconstructed images
@@ -83,12 +85,12 @@ def plot_sample_reconstruction(models, test_dataset, seed=23):
         axs[j, 0].imshow(img.cpu(), cmap="gray")
         axs[j, 0].axis("off")
 
-    fig.savefig(f"autoencoder_mnist/results/samples.png")
+    fig.savefig(f"{DIR}/results/samples.png")
 
 
 def try_load_model(model):
     try:
-        state_dict = torch.load(f"autoencoder_mnist/data/{model.name()}.pt")
+        state_dict = torch.load(f"{DIR}/data/{model.name()}.pt")
         model.load_state_dict(state_dict)
     except:
         return False
