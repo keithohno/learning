@@ -13,8 +13,20 @@ DIR = os.path.dirname(os.path.realpath(__file__))
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
+# runs train -> plot pipeline for a list of models
+def run_pipeline_for_models(models, train_dataset, test_dataset):
+    loss_lists = []
+    for model in models:
+        if not (try_load_model(model)):
+            loss_lists.append(train(model, train_dataset, test_dataset))
+
+    if len(loss_lists) == len(models):
+        plot_loss_charts(models, loss_lists)
+    plot_sample_reconstruction(models, test_dataset)
+
+
 # trains/saves model and reports loss
-def run_training_pipeline(model, train_dataset, test_dataset, seed=23):
+def train(model, train_dataset, test_dataset, seed=23):
     torch.manual_seed(seed)
 
     train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
@@ -51,7 +63,12 @@ def run_training_pipeline(model, train_dataset, test_dataset, seed=23):
 
 
 # plots loss charts
-def plot_loss_charts(models, loss_lists, colors):
+def plot_loss_charts(models, loss_lists):
+    colors = [
+        (x / len(models) / 2 + 0.5, x / len(models) / 2 + 0.5, 1.0)
+        for x in range(len(models))
+    ]
+
     fig, ax = plt.subplots()
     for i in range(len(models)):
         loss_list = [x.item() for x in loss_lists[i]]
@@ -101,20 +118,9 @@ def run():
     train_dataset = MNIST("datasets", download=True, transform=ToTensor())
     test_dataset = MNIST("datasets", download=True, transform=ToTensor(), train=False)
 
+    # ModelV1 block
     models = []
     latent_dims = [3, 5, 7, 10, 15]
     for latent_dim in latent_dims:
         models.append(ModelV1(latent_dim).to(DEVICE))
-
-    loss_lists = []
-    colors = [
-        (x / len(models) / 2 + 0.5, x / len(models) / 2 + 0.5, 1.0)
-        for x in range(len(models))
-    ]
-    for model in models:
-        if not (try_load_model(model)):
-            loss_lists.append(run_training_pipeline(model, train_dataset, test_dataset))
-
-    if loss_lists:
-        plot_loss_charts(models, loss_lists, colors)
-    plot_sample_reconstruction(models, test_dataset)
+    run_pipeline_for_models(models, train_dataset, test_dataset)
