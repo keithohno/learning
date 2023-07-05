@@ -88,7 +88,8 @@ def plot_sample_reconstruction(models, test_dataset, seed=23):
 
 def try_load_model(model):
     try:
-        torch.load(f"autoencoder_mnist/data/{model.name()}.pt")
+        state_dict = torch.load(f"autoencoder_mnist/data/{model.name()}.pt")
+        model.load_state_dict(state_dict)
     except:
         return False
     return True
