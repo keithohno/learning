@@ -51,7 +51,7 @@ class ModelV1(AutoEncoder):
             nn.ConvTranspose2d(8, 8, kernel_size=2, stride=2),
             activation,
             nn.ConvTranspose2d(8, 1, kernel_size=2, stride=2),
-            activation,
+            nn.Sigmoid(),
         )
         self.latent_dim = latent_dim
         self.activation = activation
@@ -78,7 +78,7 @@ class ModelV2(AutoEncoder):
             nn.Linear(latent_dim, 128),
             activation,
             nn.Linear(128, 28 * 28),
-            activation,
+            nn.Sigmoid(),
             nn.Unflatten(-1, (1, 28, 28)),
         )
         self.latent_dim = latent_dim
