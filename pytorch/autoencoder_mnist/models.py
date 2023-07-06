@@ -105,6 +105,7 @@ class ModelV3(AutoEncoder):
             nn.SELU() if mse_loss else nn.Sigmoid(),
             nn.Unflatten(-1, (1, 28, 28)),
         )
+        self.latent_dim = 32
 
         self.optimizer = (
             torch.optim.SGD(self.parameters(), lr=1e-1)

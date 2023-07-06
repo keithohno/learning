@@ -7,7 +7,11 @@ import os
 from tqdm import tqdm
 
 from .models import ModelV1, ModelV2, ModelV3
-from .plot import plot_loss_charts, plot_sample_reconstruction
+from .plot import (
+    plot_loss_history,
+    plot_sample_reconstruction,
+    plot_latent_reconstruction,
+)
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -22,8 +26,9 @@ def run_pipeline_for_models(models, train_dataset, test_dataset):
             loss_lists.append(train(model, train_dataset, test_dataset))
 
     if len(loss_lists) == len(models):
-        plot_loss_charts(models, loss_lists, DIR)
+        plot_loss_history(models, loss_lists, DIR)
     plot_sample_reconstruction(models, test_dataset, DEVICE, DIR)
+    plot_latent_reconstruction(models, test_dataset, DEVICE, DIR)
 
 
 # trains/saves model and reports loss
