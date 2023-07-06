@@ -81,17 +81,18 @@ def run():
 
     # ModelV1 block
     models = []
-    latent_dims = [3, 5, 7, 10, 15]
+    latent_dims = [8, 16, 24, 32]
     for latent_dim in latent_dims:
         models.append(ModelV1(latent_dim).to(DEVICE))
+    models.append(ModelV1(32, nn.ReLU()).to(DEVICE))
     run_pipeline_for_models(models, train_dataset, test_dataset)
 
     # ModelV2 block
     models = []
-    latent_dims = [8, 16, 32]
+    latent_dims = [8, 16, 24, 32]
     for latent_dim in latent_dims:
         models.append(ModelV2(latent_dim).to(DEVICE))
-        models.append(ModelV2(latent_dim, activation=nn.ReLU()).to(DEVICE))
+    models.append(ModelV2(32, nn.ReLU()).to(DEVICE))
     run_pipeline_for_models(models, train_dataset, test_dataset)
 
     # ModelV3 block
