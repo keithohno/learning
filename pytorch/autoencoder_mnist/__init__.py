@@ -6,7 +6,7 @@ from torchvision.transforms import ToTensor
 import os
 from tqdm import tqdm
 
-from .models import ModelV1, ModelV2, ModelV3
+from .models import ModelV1, ModelV2, ModelV3, ModelV4
 from .plot import (
     plot_loss_history,
     plot_sample_reconstruction,
@@ -100,4 +100,11 @@ def run():
     for mse_loss in [False, True]:
         for sgd_optim in [False, True]:
             models.append(ModelV3(sgd_optim=sgd_optim, mse_loss=mse_loss).to(DEVICE))
+    run_pipeline_for_models(models, train_dataset, test_dataset)
+
+    # ModelV4 block
+    models = []
+    latent_dims = [8, 16, 24, 32]
+    for latent_dim in latent_dims:
+        models.append(ModelV4(latent_dim).to(DEVICE))
     run_pipeline_for_models(models, train_dataset, test_dataset)
