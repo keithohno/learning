@@ -8,6 +8,12 @@ class AutoEncoder(nn.Module):
         self.encoder = nn.Identity()
         self.decoder = nn.Identity()
 
+        self.optimizer = None
+        self.loss_fn = nn.MSELoss()
+
+        self.name = f"{self.__class__.__name__}"
+        self.spec = "default"
+
     def forward(self, x):
         return self.decode(self.encode(x))
 
@@ -17,13 +23,8 @@ class AutoEncoder(nn.Module):
     def decode(self, x):
         return self.decoder(x)
 
-    def name(self):
-        return f"{self.__class__.__name__}"
 
-    def spec(self):
-        return "default"
-
-
+# First attempt at a convolutional auto-encoder
 class ModelV1(AutoEncoder):
     def __init__(self, latent_dim, activation=nn.SELU(), seed=23):
         super().__init__()
@@ -55,13 +56,13 @@ class ModelV1(AutoEncoder):
         self.latent_dim = latent_dim
         self.activation = activation
 
-    def name(self):
-        return "V1"
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
 
-    def spec(self):
-        return f"{self.latent_dim}-{self.activation.__class__.__name__}"
+        self.name = "V1"
+        self.spec = f"{self.latent_dim}-{self.activation.__class__.__name__}"
 
 
+# Fully linear auto-encoder
 class ModelV2(AutoEncoder):
     def __init__(self, latent_dim, activation=nn.SELU(), seed=23):
         super().__init__()
@@ -83,8 +84,36 @@ class ModelV2(AutoEncoder):
         self.latent_dim = latent_dim
         self.activation = activation
 
-    def name(self):
-        return "V2"
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
 
-    def spec(self):
-        return f"{self.latent_dim}-{self.activation.__class__.__name__}"
+        self.name = "V2"
+        self.spec = f"{self.latent_dim}-{self.activation.__class__.__name__}"
+
+
+# Experimental model for comparing loss functions and optimizers
+class ModelV3(AutoEncoder):
+    def __init__(self, mse_loss=False, sgd_optim=False, seed=23):
+        super().__init__()
+        torch.manual_seed(seed)
+        self.encoder = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(28 * 28, 32),
+            nn.SELU(),
+        )
+        self.decoder = nn.Sequential(
+            nn.Linear(32, 28 * 28),
+            nn.SELU() if mse_loss else nn.Sigmoid(),
+            nn.Unflatten(-1, (1, 28, 28)),
+        )
+
+        self.optimizer = (
+            torch.optim.SGD(self.parameters(), lr=1e-1)
+            if sgd_optim
+            else torch.optim.Adam(self.parameters(), lr=1e-3)
+        )
+        self.loss_fn = nn.MSELoss() if mse_loss else nn.BCELoss()
+
+        self.name = "V3"
+        self.spec = (
+            f"{self.loss_fn.__class__.__name__}-{self.optimizer.__class__.__name__}"
+        )
