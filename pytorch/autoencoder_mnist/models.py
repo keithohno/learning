@@ -149,3 +149,42 @@ class ModelV4(AutoEncoder):
 
         self.name = "V4"
         self.spec = f"{self.latent_dim}"
+
+
+# Slightly larger convolutional model
+class ModelV5(AutoEncoder):
+    def __init__(self, latent_dim, seed=23):
+        super().__init__()
+        torch.manual_seed(seed)
+        self.encoder = nn.Sequential(
+            nn.Conv2d(1, 8, kernel_size=3, padding=1),
+            nn.Conv2d(8, 8, kernel_size=3, padding=1),
+            nn.MaxPool2d(2),
+            nn.SELU(),
+            nn.Conv2d(8, 8, kernel_size=3, padding=1),
+            nn.Conv2d(8, 8, kernel_size=3),
+            nn.MaxPool2d(2),
+            nn.SELU(),
+            nn.Conv2d(8, 8, kernel_size=3, padding=1),
+            nn.MaxPool2d(2),
+            nn.SELU(),
+            nn.Flatten(),
+            nn.Linear(72, latent_dim),
+            nn.SELU(),
+        )
+        self.decoder = nn.Sequential(
+            nn.Linear(latent_dim, 72),
+            nn.Unflatten(-1, (8, 3, 3)),
+            nn.ConvTranspose2d(8, 8, kernel_size=2, stride=2),
+            nn.SELU(),
+            nn.ConvTranspose2d(8, 8, kernel_size=3, stride=2),
+            nn.SELU(),
+            nn.ConvTranspose2d(8, 1, kernel_size=4, stride=2),
+            nn.Sigmoid(),
+        )
+        self.latent_dim = latent_dim
+
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
+
+        self.name = "V5"
+        self.spec = f"{self.latent_dim}"
