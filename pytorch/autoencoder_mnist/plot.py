@@ -45,43 +45,58 @@ def plot_sample_reconstruction(models, test_dataset, device, output_dir, seed=23
     fig.savefig(f"{output_dir}/results/{model.name}_samples.png")
 
 
+def estimate_latent_distribution(model, dataloader, device):
+    # calculate latent space means for each digit
+    means = torch.zeros((10, model.latent_dim)).to(device)
+    counts = torch.zeros(10).to(device)
+    model.eval()
+    with torch.inference_mode():
+        for x, y in dataloader:
+            x = x.to(device)
+            z = model.encoder(x)
+            for digit, latent in zip(y, z):
+                means[digit] += latent
+                counts[digit] += 1
+    means /= counts.reshape(-1, 1)
+
+    # calculate latent space stds for each digit
+    stds = torch.zeros((10, model.latent_dim)).to(device)
+    with torch.inference_mode():
+        for x, y in dataloader:
+            x = x.to(device)
+            z = model.encoder(x)
+            for digit, latent in zip(y, z):
+                stds[digit] += (latent - means[digit]) ** 2
+    stds /= counts.reshape(-1, 1)
+    stds = torch.sqrt(stds)
+
+    return means, stds
+
+
 def plot_latent_reconstruction(models, test_dataset, device, output_dir, seed=23):
     torch.manual_seed(seed)
 
-    fig, axs = plt.subplots(10, len(models), figsize=(len(models) * 2, 20))
+    fig1, axs1 = plt.subplots(10, len(models), figsize=(len(models) * 2, 20))
+    fig2, axs2 = plt.subplots(10, len(models), figsize=(len(models) * 2, 20))
 
     dataloader = DataLoader(test_dataset, batch_size=32)
     for i, model in enumerate(models):
-        # calculate latent space means for each digit
-        means = torch.zeros((10, model.latent_dim)).to(device)
-        counts = torch.zeros(10).to(device)
-        model.eval()
-        with torch.inference_mode():
-            for x, y in dataloader:
-                x = x.to(device)
-                z = model.encoder(x)
-                for digit, latent in zip(y, z):
-                    means[digit] += latent
-                    counts[digit] += 1
-        means /= counts.reshape(-1, 1)
-
-        # calculate latent space stds for each digit
-        stds = torch.zeros((10, model.latent_dim)).to(device)
-        with torch.inference_mode():
-            for x, y in dataloader:
-                x = x.to(device)
-                z = model.encoder(x)
-                for digit, latent in zip(y, z):
-                    stds[digit] += (latent - means[digit]) ** 2
-        stds /= counts.reshape(-1, 1)
-        stds = torch.sqrt(stds)
+        means, stds = estimate_latent_distribution(model, dataloader, device)
 
         # sample from latent space and plot reconstructions
         for j in range(10):
             sample = torch.normal(means[j], stds[j])
             img = model.decoder(sample).detach().squeeze()
-            axs[j, i].imshow(img.cpu(), cmap="gray")
-            axs[j, i].axis("off")
-        axs[0, i].set_title(model.spec)
+            axs1[j, i].imshow(img.cpu(), cmap="gray")
+            axs1[j, i].axis("off")
+        axs1[0, i].set_title(model.spec)
 
-    fig.savefig(f"{output_dir}/results/{model.name}_latent.png")
+        # take means from latent space and plot reconstructions
+        for j in range(10):
+            img = model.decoder(means[j]).detach().squeeze()
+            axs2[j, i].imshow(img.cpu(), cmap="gray")
+            axs2[j, i].axis("off")
+        axs2[0, i].set_title(model.spec)
+
+    fig1.savefig(f"{output_dir}/results/{models[0].name}_latent_sample.png")
+    fig2.savefig(f"{output_dir}/results/{models[0].name}_latent_mean.png")
