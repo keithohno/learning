@@ -3,15 +3,16 @@ from torch import nn
 
 
 class VAE(nn.Module):
-    def __init__(self):
+    def __init__(self, seed=23):
         super().__init__()
+        torch.manual_seed(seed)
         self.encoder = nn.Sequential(
             nn.Flatten(),
             nn.Linear(784, 128),
             nn.ReLU(),
         )
         self.encoder_to_mean = nn.Linear(128, 16)
-        self.encoder_to_std = nn.Linear(128, 16)
+        self.encoder_to_std = nn.Sequential(nn.Linear(128, 16), nn.Softplus())
         self.decoder = nn.Sequential(
             nn.Linear(16, 128),
             nn.ReLU(),
@@ -20,11 +21,15 @@ class VAE(nn.Module):
             nn.Sigmoid(),
         )
 
-    def forward(self, x):
-        # encode
+    def encode(self, x):
         x = self.encoder(x)
         mean = self.encoder_to_mean(x)
         std = self.encoder_to_std(x)
+        return mean, std
+
+    def forward(self, x):
+        # encode
+        mean, std = self.encode(x)
 
         # sample with reparameterization
         z = mean + std * torch.randn_like(std)
