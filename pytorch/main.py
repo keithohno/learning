@@ -4,9 +4,10 @@ print(
     "  (1) classification_clusters\n"
     "  (2) classification_mnist\n"
     "  (3) autoencoder_mnist\n"
+    "  (4) vae_mnist\n"
 )
 
-selection = input("Make a selection (default 3): ")
+selection = input("Make a selection (default 4): ")
 
 print()
 
@@ -25,7 +26,12 @@ elif selection == "2":
 
     classification_mnist.run()
 
-else:
+elif selection == "3":
     import autoencoder_mnist
 
     autoencoder_mnist.run()
+
+else:
+    import vae_mnist
+
+    vae_mnist.run()
