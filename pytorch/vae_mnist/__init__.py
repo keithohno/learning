@@ -14,12 +14,8 @@ DIR = "vae_mnist"
 def train(model, train_dataloader, test_dataloader):
     print(f"training {model.__class__.__name__}...")
 
-    # training statistics
     epoch_list = []
     loss_list = []
-
-    # loss function and optimizer
-    loss_fn = torch.nn.BCELoss()
     optimizer = torch.optim.Adam(model.parameters())
 
     # training loop
@@ -27,8 +23,8 @@ def train(model, train_dataloader, test_dataloader):
         model.train()
         for x, _ in train_dataloader:
             x = x.to(DEVICE)
-            x_hat = model(x)
-            loss = loss_fn(x_hat, x)
+            x_hat, mean, std = model(x)
+            loss = model.loss(x, x_hat, mean, std)
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
@@ -39,8 +35,8 @@ def train(model, train_dataloader, test_dataloader):
             loss = 0
             for x, _ in test_dataloader:
                 x = x.to(DEVICE)
-                x_hat = model(x)
-                loss += loss_fn(x_hat, x).item()
+                x_hat, mean, std = model(x)
+                loss += model.loss(x, x_hat, mean, std).item()
             loss /= len(test_dataloader)
             epoch_list.append(epoch)
             loss_list.append(loss)

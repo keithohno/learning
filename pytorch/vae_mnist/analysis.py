@@ -16,7 +16,8 @@ def plot_sample_reconstructions(dataset, model, output_dir, seed=23):
     fig, axs = plt.subplots(DATA_SAMPLES, 2, figsize=(4, 16))
 
     with torch.inference_mode():
-        x_hat = model(x).detach().squeeze()
+        x_hat, _, _ = model(x)
+        x_hat = x_hat.detach().squeeze()
         for i in range(8):
             axs[i, 0].imshow(x[i].squeeze().cpu(), cmap="gray")
             axs[i, 1].imshow(x_hat[i].cpu(), cmap="gray")

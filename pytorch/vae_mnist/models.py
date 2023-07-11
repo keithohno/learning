@@ -20,6 +20,7 @@ class VAE(nn.Module):
             nn.Unflatten(-1, (1, 28, 28)),
             nn.Sigmoid(),
         )
+        self.loss_fn = nn.BCELoss()
 
     def encode(self, x):
         x = self.encoder(x)
@@ -37,4 +38,9 @@ class VAE(nn.Module):
         # decode
         x_hat = self.decoder(z)
 
-        return x_hat
+        return x_hat, mean, std
+
+    def loss(self, x, x_hat, mean, std, beta=0.1):
+        reconstruction_loss = self.loss_fn(x_hat, x)
+        regularization_loss = torch.mean(0.5 * (mean**2 + std**2) - torch.log(std))
+        return reconstruction_loss + beta * regularization_loss
