@@ -3,7 +3,7 @@ from torch import nn
 
 
 class VAE(nn.Module):
-    def __init__(self, seed=23):
+    def __init__(self, regularization_weight, seed=23):
         super().__init__()
         torch.manual_seed(seed)
         self.encoder = nn.Sequential(
@@ -21,6 +21,7 @@ class VAE(nn.Module):
             nn.Sigmoid(),
         )
         self.loss_fn = nn.BCELoss()
+        self.regularization_weight = regularization_weight
 
     def encode(self, x):
         x = self.encoder(x)
@@ -29,18 +30,19 @@ class VAE(nn.Module):
         return mean, std
 
     def forward(self, x):
-        # encode
         mean, std = self.encode(x)
-
-        # sample with reparameterization
         z = mean + std * torch.randn_like(std)
-
-        # decode
         x_hat = self.decoder(z)
 
         return x_hat, mean, std
 
-    def loss(self, x, x_hat, mean, std, beta=0.1):
+    def loss(self, x, x_hat, mean, std):
         reconstruction_loss = self.loss_fn(x_hat, x)
         regularization_loss = torch.mean(0.5 * (mean**2 + std**2) - torch.log(std))
-        return reconstruction_loss + beta * regularization_loss
+        return reconstruction_loss + self.regularization_weight * regularization_loss
+
+    def id(self):
+        return f"beta{self.regularization_weight}"
+
+    def load_from_disk(self, model_dir):
+        self.load_state_dict(torch.load(f"{model_dir}/model-{self.id()}.pt"))
