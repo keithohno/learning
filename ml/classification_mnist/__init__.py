@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
 from tqdm import tqdm
-from helpers import eval_model, plot_loss_accuracy
+from .helpers import eval_model, plot_loss_accuracy
 
 
 def get_dataloaders():
