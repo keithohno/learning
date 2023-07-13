@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.pylab as pl
 
 
-def plot_sample_reconstructions(dataset, models, output_dir, seed=23):
+def generate_sample_reconstructions(dataset, models, output_dir, seed=23):
     torch.manual_seed(seed)
     device = next(models[0].parameters()).device
 
@@ -34,6 +34,27 @@ def plot_sample_reconstructions(dataset, models, output_dir, seed=23):
     axs[0, 0].set_title("Original")
 
     fig.savefig(f"{output_dir}/reconstruction/{model.genus()}.png")
+
+
+def generate_latent_space_constructions(model, output_dir, seed=23):
+    torch.manual_seed(seed)
+    device = next(model.parameters()).device
+
+    ROWS = 8
+    COLS = 8
+
+    fig, axs = plt.subplots(ROWS, COLS, figsize=(2 * COLS, 2 * ROWS))
+    samples = torch.randn(ROWS * COLS, model.latent_dim()).to(device)
+
+    with torch.inference_mode():
+        x_hat = model.decode(samples).detach().squeeze()
+        for i in range(ROWS):
+            for j in range(COLS):
+                axs[i, j].imshow(x_hat[i * COLS + j].cpu(), cmap="gray")
+                axs[i, j].axis("off")
+
+    fig.suptitle(f"{model.genus()}-{model.id()}")
+    fig.savefig(f"{output_dir}/z-construction/{model.genus()}-{model.id()}.png")
 
 
 def plot_latent_space_parameters(dataset, models, output_dir, seed=23):

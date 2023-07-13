@@ -22,10 +22,13 @@ class VAE(nn.Module):
         std = self.encoder_to_std(x)
         return mean, std
 
+    def decode(self, z):
+        return self.decoder(z)
+
     def forward(self, x):
         mean, std = self.encode(x)
         z = mean + std * torch.randn_like(std)
-        x_hat = self.decoder(z)
+        x_hat = self.decode(z)
 
         return x_hat, mean, std
 
@@ -38,6 +41,9 @@ class VAE(nn.Module):
         raise NotImplementedError
 
     def id(self):
+        raise NotImplementedError
+
+    def latent_dim(self):
         raise NotImplementedError
 
     def save_to_disk(self, model_dir):
@@ -73,6 +79,9 @@ class VAEv1(VAE):
 
     def id(self):
         return f"beta{self.beta}"
+
+    def latent_dim(self):
+        return 16
 
 
 class VAEv2(VAE):
@@ -110,3 +119,6 @@ class VAEv2(VAE):
 
     def id(self):
         return f"beta{self.beta}"
+
+    def latent_dim(self):
+        return 48

@@ -6,7 +6,8 @@ from tqdm import tqdm
 
 from .models import VAEv1, VAEv2
 from .analysis import (
-    plot_sample_reconstructions,
+    generate_sample_reconstructions,
+    generate_latent_space_constructions,
     plot_latent_space_parameters,
     plot_loss_history,
 )
@@ -67,7 +68,9 @@ def run_pipeline_for_models(models, train_dataset, test_dataset, seed=23):
         plot_loss_history(models, loss_histories, f"{DIR}/plots")
 
     # plot results
-    plot_sample_reconstructions(test_dataset, models, f"{DIR}/plots")
+    generate_sample_reconstructions(test_dataset, models, f"{DIR}/plots")
+    for model in models:
+        generate_latent_space_constructions(model, f"{DIR}/plots")
     plot_latent_space_parameters(test_dataset, models, f"{DIR}/plots")
 
 
