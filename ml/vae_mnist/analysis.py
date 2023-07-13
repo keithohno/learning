@@ -33,7 +33,7 @@ def plot_sample_reconstructions(dataset, models, output_dir, seed=23):
 
     axs[0, 0].set_title("Original")
 
-    fig.savefig(f"{output_dir}/plots/samples.png")
+    fig.savefig(f"{output_dir}/reconstruction/{model.genus()}.png")
 
 
 def plot_latent_space_parameters(dataset, models, output_dir, seed=23):
@@ -70,7 +70,7 @@ def plot_latent_space_parameters(dataset, models, output_dir, seed=23):
     axs[0, 0].set_title("means")
     axs[0, 1].set_title("stds")
 
-    fig.savefig(f"{output_dir}/plots/latent_parameters.png")
+    fig.savefig(f"{output_dir}/z-shape/{model.genus()}.png")
 
 
 def plot_loss_history(models, loss_histories, output_dir):
@@ -81,9 +81,10 @@ def plot_loss_history(models, loss_histories, output_dir):
         lmin = min(loss_histories[i])
         loss_histories[i] = [(l - lmin) / (lmax - lmin) for l in loss_histories[i]]
 
+    plt.figure()
     for i, model in enumerate(models):
         plt.plot(loss_histories[i], label=model.id(), color=colors[i])
     plt.legend()
     plt.xlabel("epoch")
     plt.ylabel("normalized loss")
-    plt.savefig(f"{output_dir}/plots/loss.png")
+    plt.savefig(f"{output_dir}/loss/{model.genus()}.png")
