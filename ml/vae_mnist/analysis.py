@@ -4,28 +4,26 @@ import matplotlib.pyplot as plt
 import matplotlib.pylab as pl
 
 
-def generate_sample_reconstructions(dataset, models, output_dir, seed=23):
+def generate_sample_reconstructions(models, dataset, output_dir, seed=23):
     torch.manual_seed(seed)
     device = next(models[0].parameters()).device
 
     DATA_SAMPLES = 8
+    fig, axs = plt.subplots(
+        DATA_SAMPLES, len(models) + 1, figsize=(2 + len(models) * 2, 16)
+    )
 
     dataloader = DataLoader(dataset, batch_size=DATA_SAMPLES, shuffle=True)
     x, _ = next(iter(dataloader))
     x = x.to(device)
 
-    fig, axs = plt.subplots(
-        DATA_SAMPLES, len(models) + 1, figsize=(2 + len(models) * 2, 16)
-    )
-
-    with torch.inference_mode():
-        for i, model in enumerate(models):
-            x_hat, _, _ = model(x)
-            x_hat = x_hat.detach().squeeze()
-            for j in range(DATA_SAMPLES):
-                axs[j, i + 1].imshow(x_hat[j].cpu(), cmap="gray")
-                axs[j, i + 1].axis("off")
-            axs[0, i + 1].set_title(model.id())
+    for i, model in enumerate(models):
+        x_hat, _, _ = model(x)
+        x_hat = x_hat.detach().squeeze()
+        for j in range(DATA_SAMPLES):
+            axs[j, i + 1].imshow(x_hat[j].cpu(), cmap="gray")
+            axs[j, i + 1].axis("off")
+        axs[0, i + 1].set_title(model.id())
 
     for j in range(DATA_SAMPLES):
         axs[j, 0].imshow(x[j].squeeze().cpu(), cmap="gray")
@@ -34,6 +32,37 @@ def generate_sample_reconstructions(dataset, models, output_dir, seed=23):
     axs[0, 0].set_title("Original")
 
     fig.savefig(f"{output_dir}/reconstruction/{model.genus()}.png")
+    plt.close()
+
+
+def generate_perturbance_reconstructions(model, dataset, output_dir, seed=23):
+    torch.manual_seed(seed)
+    device = next(model.parameters()).device
+
+    ROWS = 8
+    COLS = 9
+    fig, axs = plt.subplots(ROWS, COLS, figsize=(1 + 2 * COLS, 2 * ROWS))
+
+    dataloader = DataLoader(dataset, batch_size=ROWS, shuffle=True)
+    x, _ = next(iter(dataloader))
+    x = x.to(device)
+    mean, std = model.encode(x)
+
+    for i in range(COLS - 1):
+        samples = mean + std * torch.randn_like(std)
+        x_hat = model.decode(samples).detach().squeeze()
+        for j in range(ROWS):
+            axs[j, i + 1].imshow(x_hat[j].cpu(), cmap="gray")
+            axs[j, i + 1].axis("off")
+    for j in range(ROWS):
+        axs[j, 0].imshow(x[j].squeeze().cpu(), cmap="gray")
+        axs[j, 0].axis("off")
+    axs[0, 0].set_title("Original")
+
+    fig.savefig(
+        f"{output_dir}/perturbance-reconstruction/{model.genus()}-{model.id()}.png"
+    )
+    plt.close()
 
 
 def generate_latent_space_constructions(model, output_dir, seed=23):
@@ -42,21 +71,21 @@ def generate_latent_space_constructions(model, output_dir, seed=23):
 
     ROWS = 8
     COLS = 8
-
     fig, axs = plt.subplots(ROWS, COLS, figsize=(2 * COLS, 2 * ROWS))
+
     samples = torch.randn(ROWS * COLS, model.latent_dim()).to(device)
+    x_hat = model.decode(samples).detach().squeeze()
 
-    with torch.inference_mode():
-        x_hat = model.decode(samples).detach().squeeze()
-        for i in range(ROWS):
-            for j in range(COLS):
-                axs[i, j].imshow(x_hat[i * COLS + j].cpu(), cmap="gray")
-                axs[i, j].axis("off")
+    for i in range(ROWS):
+        for j in range(COLS):
+            axs[i, j].imshow(x_hat[i * COLS + j].cpu(), cmap="gray")
+            axs[i, j].axis("off")
 
-    fig.savefig(f"{output_dir}/z-construction/{model.genus()}-{model.id()}.png")
+    fig.savefig(f"{output_dir}/latent-construction/{model.genus()}-{model.id()}.png")
+    plt.close()
 
 
-def plot_latent_space_parameters(dataset, models, output_dir, seed=23):
+def plot_latent_space_parameters(models, dataset, output_dir, seed=23):
     torch.manual_seed(seed)
     device = next(models[0].parameters()).device
 
@@ -72,6 +101,7 @@ def plot_latent_space_parameters(dataset, models, output_dir, seed=23):
     dataloader = DataLoader(dataset, batch_size=1)
     with torch.inference_mode():
         for i, model in enumerate(models):
+            model.eval()
             means = torch.tensor([]).to(device)
             stds = torch.tensor([]).to(device)
             for x, _ in dataloader:
@@ -90,7 +120,8 @@ def plot_latent_space_parameters(dataset, models, output_dir, seed=23):
     axs[0, 0].set_title("means")
     axs[0, 1].set_title("stds")
 
-    fig.savefig(f"{output_dir}/z-shape/{model.genus()}.png")
+    fig.savefig(f"{output_dir}/latent-shape/{model.genus()}.png")
+    plt.close()
 
 
 def plot_loss_history(models, loss_histories, output_dir):
@@ -108,3 +139,4 @@ def plot_loss_history(models, loss_histories, output_dir):
     plt.xlabel("epoch")
     plt.ylabel("normalized loss")
     plt.savefig(f"{output_dir}/loss/{model.genus()}.png")
+    plt.close()
