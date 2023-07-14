@@ -3,9 +3,11 @@ from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import matplotlib.pylab as pl
 
+from helpers import manual_seed
+
 
 def generate_sample_reconstructions(models, dataset, output_dir, seed=23):
-    torch.manual_seed(seed)
+    manual_seed(seed)
     device = next(models[0].parameters()).device
 
     DATA_SAMPLES = 8
@@ -36,7 +38,7 @@ def generate_sample_reconstructions(models, dataset, output_dir, seed=23):
 
 
 def generate_perturbance_reconstructions(model, dataset, output_dir, seed=23):
-    torch.manual_seed(seed)
+    manual_seed(seed)
     device = next(model.parameters()).device
 
     ROWS = 8
@@ -66,7 +68,7 @@ def generate_perturbance_reconstructions(model, dataset, output_dir, seed=23):
 
 
 def generate_latent_space_constructions(model, output_dir, seed=23):
-    torch.manual_seed(seed)
+    manual_seed(seed)
     device = next(model.parameters()).device
 
     ROWS = 8
@@ -86,7 +88,7 @@ def generate_latent_space_constructions(model, output_dir, seed=23):
 
 
 def plot_latent_space_parameters(models, dataset, output_dir, seed=23):
-    torch.manual_seed(seed)
+    manual_seed(seed)
     device = next(models[0].parameters()).device
 
     fig, axs = plt.subplots(

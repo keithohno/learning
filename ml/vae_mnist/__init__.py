@@ -4,6 +4,7 @@ from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
 from tqdm import tqdm
 
+from helpers import manual_seed
 from .models import VAEv1, VAEv2, VAEv3
 from .analysis import (
     generate_sample_reconstructions,
@@ -53,7 +54,7 @@ def train(model, train_dataloader, test_dataloader, epochs):
 
 def run_pipeline_for_models(models, train_dataset, test_dataset, epochs=25, seed=23):
     # create dataloaders
-    torch.manual_seed(seed)
+    manual_seed(seed)
     train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
     test_dataloader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 

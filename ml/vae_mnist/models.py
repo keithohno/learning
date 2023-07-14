@@ -2,11 +2,13 @@ import torch
 from torch import nn
 import os
 
+from helpers import manual_seed
+
 
 class VAE(nn.Module):
     def __init__(self, beta, seed=23):
         super().__init__()
-        torch.manual_seed(seed)
+        manual_seed(seed)
         self.encoder = nn.Identity()
         self.encoder_to_mean = nn.Identity()
         self.encoder_to_std = nn.Softplus()
