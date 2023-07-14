@@ -4,7 +4,7 @@ from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
 from tqdm import tqdm
 
-from .models import VAEv1, VAEv2
+from .models import VAEv1, VAEv2, VAEv3
 from .analysis import (
     generate_sample_reconstructions,
     generate_latent_space_constructions,
@@ -16,14 +16,14 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 DIR = "vae_mnist"
 
 
-def train(model, train_dataloader, test_dataloader):
+def train(model, train_dataloader, test_dataloader, epochs):
     print(f"training {model.__class__.__name__}-{model.id()} ...")
 
     loss_history = []
     optimizer = torch.optim.Adam(model.parameters())
 
     # training loop
-    for _ in tqdm(range(25)):
+    for _ in tqdm(range(epochs)):
         model.train()
         for x, _ in train_dataloader:
             x = x.to(DEVICE)
@@ -50,7 +50,7 @@ def train(model, train_dataloader, test_dataloader):
     return loss_history
 
 
-def run_pipeline_for_models(models, train_dataset, test_dataset, seed=23):
+def run_pipeline_for_models(models, train_dataset, test_dataset, epochs=25, seed=23):
     # create dataloaders
     torch.manual_seed(seed)
     train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
@@ -63,7 +63,7 @@ def run_pipeline_for_models(models, train_dataset, test_dataset, seed=23):
     else:
         loss_histories = []
         for model in models:
-            loss = train(model, train_dataloader, test_dataloader)
+            loss = train(model, train_dataloader, test_dataloader, epochs)
             loss_histories.append(loss)
         plot_loss_history(models, loss_histories, f"{DIR}/plots")
 
@@ -102,3 +102,9 @@ def run():
     for beta in [0.1, 0.5, 1.0]:
         models.append(VAEv2(beta).to(DEVICE))
     run_pipeline_for_models(models, train_dataset, test_dataset)
+
+    # v3 model block
+    models = []
+    for beta in [0.2, 0.5, 1.0, 2.0]:
+        models.append(VAEv3(beta).to(DEVICE))
+    run_pipeline_for_models(models, train_dataset, test_dataset, epochs=80)

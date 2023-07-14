@@ -122,3 +122,47 @@ class VAEv2(VAE):
 
     def latent_dim(self):
         return 48
+
+
+class VAEv3(VAE):
+    def __init__(self, beta):
+        super().__init__(beta)
+        self.encoder = nn.Sequential(
+            nn.Conv2d(1, 8, kernel_size=3, padding=1),
+            nn.Conv2d(8, 16, kernel_size=3, padding=1),
+            nn.MaxPool2d(2),
+            nn.ReLU(),
+            nn.Conv2d(16, 16, kernel_size=3, padding=1),
+            nn.Conv2d(16, 16, kernel_size=3),
+            nn.MaxPool2d(2),
+            nn.ReLU(),
+            nn.Conv2d(16, 16, kernel_size=3, padding=1),
+            nn.MaxPool2d(2),
+            nn.ReLU(),
+            nn.Flatten(),
+        )
+        self.encoder_to_mean = nn.Linear(144, 64)
+        self.encoder_to_std = nn.Sequential(nn.Linear(144, 64), nn.Softplus())
+        self.decoder = nn.Sequential(
+            nn.Linear(64, 144),
+            nn.Unflatten(-1, (16, 3, 3)),
+            nn.ConvTranspose2d(16, 16, kernel_size=3, stride=1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(16, 16, kernel_size=4, stride=1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(16, 16, kernel_size=4, stride=1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(16, 8, kernel_size=3, stride=1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(8, 1, kernel_size=4, stride=2),
+            nn.Sigmoid(),
+        )
+
+    def genus(self):
+        return "VAEv3"
+
+    def id(self):
+        return f"beta{self.beta}"
+
+    def latent_dim(self):
+        return 64

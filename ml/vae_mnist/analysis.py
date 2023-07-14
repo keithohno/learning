@@ -53,7 +53,6 @@ def generate_latent_space_constructions(model, output_dir, seed=23):
                 axs[i, j].imshow(x_hat[i * COLS + j].cpu(), cmap="gray")
                 axs[i, j].axis("off")
 
-    fig.suptitle(f"{model.genus()}-{model.id()}")
     fig.savefig(f"{output_dir}/z-construction/{model.genus()}-{model.id()}.png")
 
 
