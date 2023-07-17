@@ -5,7 +5,7 @@ from torchvision.transforms import ToTensor
 from tqdm import tqdm
 
 from helpers import manual_seed
-from .models import VAEv1, VAEv2, VAEv3
+from .models import VAEv1, VAEv2, VAEv3, VAEv4
 from .analysis import (
     generate_sample_reconstructions,
     generate_perturbance_reconstructions,
@@ -96,18 +96,24 @@ def run():
 
     # v1 model block
     models = []
-    for beta in [0.1, 0.5, 1.0]:
+    for beta in [0.1, 0.2, 0.4]:
         models.append(VAEv1(beta).to(DEVICE))
     run_pipeline_for_models(models, train_dataset, test_dataset)
 
     # v2 model block
     models = []
-    for beta in [0.1, 0.5, 1.0]:
+    for beta in [0.1, 0.2, 0.5, 1.0]:
         models.append(VAEv2(beta).to(DEVICE))
     run_pipeline_for_models(models, train_dataset, test_dataset)
 
     # v3 model block
     models = []
-    for beta in [0.2, 0.5, 1.0, 2.0]:
+    for beta in [0.2, 0.5, 1.0, 1.5]:
         models.append(VAEv3(beta).to(DEVICE))
-    run_pipeline_for_models(models, train_dataset, test_dataset, epochs=80)
+    run_pipeline_for_models(models, train_dataset, test_dataset, epochs=50)
+
+    # v4 model block
+    models = []
+    for beta in [0.2, 0.5, 1.0, 1.5]:
+        models.append(VAEv4(beta).to(DEVICE))
+    run_pipeline_for_models(models, train_dataset, test_dataset, epochs=50)

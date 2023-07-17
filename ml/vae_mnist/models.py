@@ -168,3 +168,52 @@ class VAEv3(VAE):
 
     def latent_dim(self):
         return 64
+
+
+class VAEv4(VAE):
+    def __init__(self, beta):
+        super().__init__(beta)
+        self.encoder = nn.Sequential(
+            nn.Conv2d(1, 16, kernel_size=3, padding=1),
+            nn.Conv2d(16, 32, kernel_size=3, padding=1),
+            nn.MaxPool2d(2),
+            nn.ReLU(),
+            nn.Conv2d(32, 32, kernel_size=3, padding=1),
+            nn.Conv2d(32, 32, kernel_size=3),
+            nn.MaxPool2d(2),
+            nn.ReLU(),
+            nn.Conv2d(32, 16, kernel_size=3, padding=1),
+            nn.Conv2d(16, 16, kernel_size=3, padding=1),
+            nn.MaxPool2d(2),
+            nn.ReLU(),
+            nn.Flatten(),
+        )
+        self.encoder_to_mean = nn.Linear(144, 96)
+        self.encoder_to_std = nn.Sequential(nn.Linear(144, 96), nn.Softplus())
+        self.decoder = nn.Sequential(
+            nn.Linear(96, 144),
+            nn.Unflatten(-1, (16, 3, 3)),
+            nn.ConvTranspose2d(16, 32, kernel_size=4, stride=1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(32, 32, kernel_size=4, stride=1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(32, 32, kernel_size=4, stride=1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(32, 32, kernel_size=5, stride=1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(32, 32, kernel_size=5, stride=1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(32, 16, kernel_size=5, stride=1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(16, 1, kernel_size=5, stride=1),
+            nn.Sigmoid(),
+        )
+
+    def genus(self):
+        return "VAEv4"
+
+    def id(self):
+        return f"beta{self.beta}"
+
+    def latent_dim(self):
+        return 96
