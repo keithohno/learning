@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.pylab as pl
 
 from helpers import manual_seed
-from common.plotting import plot_image_grid
+from common.plots import plot_image_grid
 
 
 def generate_mean_reconstructions(models, dataset, output_dir, seed=23):
@@ -25,7 +25,7 @@ def generate_mean_reconstructions(models, dataset, output_dir, seed=23):
 
     fig, axs = plot_image_grid(x_grid)
     for i, model in enumerate(models):
-        axs[0, i + 1].set_title(model.id())
+        axs[0, i + 1].set_title(model.species())
     axs[0, 0].set_title("Original")
 
     fig.savefig(f"{output_dir}/mean-reconstruction/{model.genus()}.png")
@@ -49,7 +49,7 @@ def generate_sample_reconstructions(model, dataset, output_dir, seed=23):
     fig, axs = plot_image_grid(x_grid)
     axs[0, 0].set_title("Original")
 
-    fig.savefig(f"{output_dir}/sample-reconstruction/{model.genus()}-{model.id()}.png")
+    fig.savefig(f"{output_dir}/sample-reconstruction/{model.id()}.png")
     plt.close()
 
 
@@ -73,9 +73,7 @@ def generate_interpolation_reconstructions(model, dataset, output_dir, seed=23):
     x_grid = torch.cat((x_left, x_grid.cpu(), x_right), dim=1)
 
     fig, _ = plot_image_grid(x_grid)
-    fig.savefig(
-        f"{output_dir}/interpolation-reconstruction/{model.genus()}-{model.id()}.png"
-    )
+    fig.savefig(f"{output_dir}/interpolation-reconstruction/{model.id()}.png")
     plt.close()
 
 
@@ -90,7 +88,7 @@ def generate_latent_space_constructions(model, output_dir, seed=23):
     x_grid = model.decode(samples).detach().reshape(ROWS, COLS, 28, 28).cpu()
 
     fig, _ = plot_image_grid(x_grid)
-    fig.savefig(f"{output_dir}/latent-construction/{model.genus()}-{model.id()}.png")
+    fig.savefig(f"{output_dir}/latent-construction/{model.id()}.png")
     plt.close()
 
 
@@ -112,7 +110,7 @@ def generate_latent_space_interpolations(model, output_dir, seed=23):
     x_grid = model.decode(z).detach().reshape(SAMPLES, INTERPOLATIONS, 28, 28).cpu()
 
     fig, _ = plot_image_grid(x_grid)
-    fig.savefig(f"{output_dir}/latent-interpolation/{model.genus()}-{model.id()}.png")
+    fig.savefig(f"{output_dir}/latent-interpolation/{model.id()}.png")
     plt.close()
 
 
@@ -145,7 +143,7 @@ def plot_latent_space_parameters(models, dataset, output_dir, seed=23):
             axs[i, 0].hist(means, bins=100, range=(-3, 3))
             axs[i, 1].hist(stds, bins=100, range=(0.2, 1.2))
             axs[i, 0].set_yticklabels([])
-            axs[i, 0].set_ylabel(model.id())
+            axs[i, 0].set_ylabel(model.species())
             axs[i, 1].get_yaxis().set_visible(False)
 
     axs[0, 0].set_title("means")

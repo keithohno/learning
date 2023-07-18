@@ -1,11 +1,11 @@
 import torch
 from torch import nn
-import os
 
 from helpers import manual_seed
+from common.models import Model
 
 
-class VAE(nn.Module):
+class VAE(Model):
     def __init__(self, beta, seed=23):
         super().__init__()
         manual_seed(seed)
@@ -42,20 +42,14 @@ class VAE(nn.Module):
     def genus(self):
         raise NotImplementedError
 
-    def id(self):
+    def species(self):
         raise NotImplementedError
+
+    def id(self):
+        return f"{self.genus()}-{self.species()}"
 
     def latent_dim(self):
         raise NotImplementedError
-
-    def save_to_disk(self, model_dir):
-        torch.save(self.state_dict(), f"{model_dir}/{self.genus()}-{self.id()}.pt")
-
-    def load_from_disk(self, model_dir):
-        self.load_state_dict(torch.load(f"{model_dir}/{self.genus()}-{self.id()}.pt"))
-
-    def can_load_from_disk(self, model_dir):
-        return os.path.isfile(f"{model_dir}/{self.genus()}-{self.id()}.pt")
 
 
 class VAEv1(VAE):
@@ -79,7 +73,7 @@ class VAEv1(VAE):
     def genus(self):
         return "VAEv1"
 
-    def id(self):
+    def species(self):
         return f"beta{self.beta}"
 
     def latent_dim(self):
@@ -119,7 +113,7 @@ class VAEv2(VAE):
     def genus(self):
         return "VAEv2"
 
-    def id(self):
+    def species(self):
         return f"beta{self.beta}"
 
     def latent_dim(self):
@@ -163,7 +157,7 @@ class VAEv3(VAE):
     def genus(self):
         return "VAEv3"
 
-    def id(self):
+    def species(self):
         return f"beta{self.beta}"
 
     def latent_dim(self):
@@ -212,7 +206,7 @@ class VAEv4(VAE):
     def genus(self):
         return "VAEv4"
 
-    def id(self):
+    def species(self):
         return f"beta{self.beta}"
 
     def latent_dim(self):
