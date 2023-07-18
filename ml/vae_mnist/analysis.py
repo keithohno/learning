@@ -65,6 +65,47 @@ def generate_sample_reconstructions(model, dataset, output_dir, seed=23):
     plt.close()
 
 
+def generate_interpolation_reconstructions(model, dataset, output_dir, seed=23):
+    manual_seed(seed)
+    device = next(model.parameters()).device
+
+    SAMPLES = 8
+    INTERPOLATIONS = 8
+    fig, axs = plt.subplots(
+        SAMPLES,
+        INTERPOLATIONS + 2,
+        figsize=(
+            2 * INTERPOLATIONS + 4,
+            2 * SAMPLES,
+        ),
+    )
+
+    dataloader = DataLoader(dataset, batch_size=SAMPLES, shuffle=True)
+    x_left, _ = next(iter(dataloader))
+    x_right, _ = next(iter(dataloader))
+    z_left, _ = model.encode(x_left.to(device))
+    z_right, _ = model.encode(x_right.to(device))
+    weights = torch.arange(0, 1, 1 / INTERPOLATIONS).to(device)
+    z = torch.lerp(
+        z_left[:, None, :], z_right[:, None, :], weights[None, :, None]
+    ).reshape(SAMPLES * INTERPOLATIONS, model.latent_dim())
+    x_hat = model.decode(z).detach().squeeze()
+
+    for i in range(SAMPLES):
+        for j in range(INTERPOLATIONS):
+            axs[i, j + 1].imshow(x_hat[i * INTERPOLATIONS + j].cpu(), cmap="gray")
+            axs[i, j + 1].axis("off")
+        axs[i, 0].imshow(x_left[i].squeeze().cpu(), cmap="gray")
+        axs[i, 0].axis("off")
+        axs[i, -1].imshow(x_right[i].squeeze().cpu(), cmap="gray")
+        axs[i, -1].axis("off")
+
+    fig.savefig(
+        f"{output_dir}/interpolation-reconstruction/{model.genus()}-{model.id()}.png"
+    )
+    plt.close()
+
+
 def generate_latent_space_constructions(model, output_dir, seed=23):
     manual_seed(seed)
     device = next(model.parameters()).device
@@ -82,6 +123,37 @@ def generate_latent_space_constructions(model, output_dir, seed=23):
             axs[i, j].axis("off")
 
     fig.savefig(f"{output_dir}/latent-construction/{model.genus()}-{model.id()}.png")
+    plt.close()
+
+
+def generate_latent_space_interpolations(model, output_dir, seed=23):
+    manual_seed(seed)
+    device = next(model.parameters()).device
+
+    SAMPLES = 8
+    INTERPOLATIONS = 8
+    fig, axs = plt.subplots(
+        SAMPLES,
+        INTERPOLATIONS,
+        figsize=(2 * INTERPOLATIONS, 2 * SAMPLES),
+    )
+
+    z_left = torch.randn(SAMPLES, model.latent_dim())
+    z_right = torch.randn(SAMPLES, model.latent_dim())
+    weights = torch.arange(0, 1, 1 / INTERPOLATIONS)
+    z = (
+        torch.lerp(z_left[:, None, :], z_right[:, None, :], weights[None, :, None])
+        .reshape(SAMPLES * INTERPOLATIONS, model.latent_dim())
+        .to(device)
+    )
+    x_hat = model.decode(z).detach().squeeze()
+
+    for i in range(SAMPLES):
+        for j in range(INTERPOLATIONS):
+            axs[i, j].imshow(x_hat[i * INTERPOLATIONS + j].cpu(), cmap="gray")
+            axs[i, j].axis("off")
+
+    fig.savefig(f"{output_dir}/latent-interpolation/{model.genus()}-{model.id()}.png")
     plt.close()
 
 

@@ -9,7 +9,9 @@ from .models import VAEv1, VAEv2, VAEv3, VAEv4
 from .analysis import (
     generate_mean_reconstructions,
     generate_sample_reconstructions,
+    generate_interpolation_reconstructions,
     generate_latent_space_constructions,
+    generate_latent_space_interpolations,
     plot_latent_space_parameters,
     plot_loss_history,
 )
@@ -73,7 +75,9 @@ def run_pipeline_for_models(models, train_dataset, test_dataset, epochs=25, seed
     generate_mean_reconstructions(models, test_dataset, f"{DIR}/plots")
     for model in models:
         generate_sample_reconstructions(model, test_dataset, f"{DIR}/plots")
+        generate_interpolation_reconstructions(model, test_dataset, f"{DIR}/plots")
         generate_latent_space_constructions(model, f"{DIR}/plots")
+        generate_latent_space_interpolations(model, f"{DIR}/plots")
     plot_latent_space_parameters(models, test_dataset, f"{DIR}/plots")
 
 
