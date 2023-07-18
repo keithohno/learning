@@ -6,7 +6,7 @@ import matplotlib.pylab as pl
 from helpers import manual_seed
 
 
-def generate_sample_reconstructions(models, dataset, output_dir, seed=23):
+def generate_mean_reconstructions(models, dataset, output_dir, seed=23):
     manual_seed(seed)
     device = next(models[0].parameters()).device
 
@@ -20,8 +20,8 @@ def generate_sample_reconstructions(models, dataset, output_dir, seed=23):
     x = x.to(device)
 
     for i, model in enumerate(models):
-        x_hat, _, _ = model(x)
-        x_hat = x_hat.detach().squeeze()
+        z, _ = model.encode(x)
+        x_hat = model.decode(z).detach().squeeze()
         for j in range(DATA_SAMPLES):
             axs[j, i + 1].imshow(x_hat[j].cpu(), cmap="gray")
             axs[j, i + 1].axis("off")
@@ -33,11 +33,11 @@ def generate_sample_reconstructions(models, dataset, output_dir, seed=23):
 
     axs[0, 0].set_title("Original")
 
-    fig.savefig(f"{output_dir}/reconstruction/{model.genus()}.png")
+    fig.savefig(f"{output_dir}/mean-reconstruction/{model.genus()}.png")
     plt.close()
 
 
-def generate_perturbance_reconstructions(model, dataset, output_dir, seed=23):
+def generate_sample_reconstructions(model, dataset, output_dir, seed=23):
     manual_seed(seed)
     device = next(model.parameters()).device
 
@@ -61,9 +61,7 @@ def generate_perturbance_reconstructions(model, dataset, output_dir, seed=23):
         axs[j, 0].axis("off")
     axs[0, 0].set_title("Original")
 
-    fig.savefig(
-        f"{output_dir}/perturbance-reconstruction/{model.genus()}-{model.id()}.png"
-    )
+    fig.savefig(f"{output_dir}/sample-reconstruction/{model.genus()}-{model.id()}.png")
     plt.close()
 
 
