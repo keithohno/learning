@@ -12,26 +12,26 @@ selection = input("Make a selection (default 4): ")
 print()
 
 if selection == "0":
-    import classification_incircle
+    from examples import classification_incircle
 
     classification_incircle.run()
 
 elif selection == "1":
-    import classification_clusters
+    from examples import classification_clusters
 
     classification_clusters.run()
 
 elif selection == "2":
-    import classification_mnist
+    from examples import classification_mnist
 
     classification_mnist.run()
 
 elif selection == "3":
-    import autoencoder_mnist
+    from examples import autoencoder_mnist
 
     autoencoder_mnist.run()
 
 else:
-    import vae_mnist
+    from examples import vae_mnist
 
     vae_mnist.run()
