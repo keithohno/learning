@@ -1,4 +1,6 @@
+import torch
 import matplotlib.pyplot as plt
+import matplotlib.pylab as pl
 
 
 def plot_image_grid(tensor):
@@ -13,3 +15,23 @@ def plot_image_grid(tensor):
             axs[i, j].imshow(tensor[i, j])
             axs[i, j].axis("off")
     return fig, axs
+
+
+def plot_normalized_loss_histories(loss_histories, labels):
+    """
+    Plots normalized loss charts for multiple models
+    """
+    epochs = len(loss_histories[0])
+    colors = pl.cm.viridis(torch.linspace(0, 1, len(loss_histories)))
+    fig = plt.figure(figsize=(10, 6))
+    for i, loss_history in enumerate(loss_histories):
+        max_loss = max(loss_history)
+        min_loss = min(loss_history)
+        normalized_loss = [
+            (loss - min_loss) / (max_loss - min_loss) for loss in loss_history
+        ]
+        plt.plot(range(epochs), normalized_loss, label=labels[i], color=colors[i])
+    plt.legend(labels)
+    plt.xlabel("epoch")
+    plt.ylabel("loss (normalized)")
+    return fig
