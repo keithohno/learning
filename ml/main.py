@@ -6,9 +6,10 @@ print(
     "  (3) autoencoder_mnist\n"
     "  (4) vae_mnist\n"
     "  (5) vae_fashion\n"
+    "  (6) gan_mnist\n"
 )
 
-selection = input("Make a selection (default 5): ")
+selection = input("Make a selection (default 6): ")
 
 print()
 
@@ -37,7 +38,18 @@ elif selection == "4":
 
     vae_mnist.run()
 
-else:
+elif selection == "5":
     from examples import vae_fashion
 
     vae_fashion.run()
+
+
+elif selection == "6":
+    from examples import gan_mnist
+
+    gan_mnist.run()
+
+else:
+    from examples import gan_mnist
+
+    gan_mnist.run()

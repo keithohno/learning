@@ -35,3 +35,27 @@ def plot_normalized_loss_histories(loss_histories, labels):
     plt.xlabel("epoch")
     plt.ylabel("loss (normalized)")
     return fig
+
+
+def plot_loss_histories(loss_histories, labels):
+    """
+    Plot loss charts for multiple models
+    """
+    epochs = len(loss_histories[0])
+    colors = pl.cm.viridis(torch.linspace(0, 1, len(loss_histories)))
+    fig = plt.figure(figsize=(10, 6))
+    for i, loss_history in enumerate(loss_histories):
+        plt.plot(range(epochs), loss_history, label=labels[i], color=colors[i])
+    plt.legend(labels)
+    plt.xlabel("epoch")
+    plt.ylabel("loss")
+    return fig
+
+
+def plot_line_graphs(data, labels):
+    colors = pl.cm.viridis(torch.linspace(0, 1, len(data)))
+    fig = plt.figure(figsize=(10, 6))
+    for i, x in enumerate(data):
+        plt.plot(range(len(x)), x, label=labels[i], color=colors[i])
+    fig.legend(labels)
+    return fig
