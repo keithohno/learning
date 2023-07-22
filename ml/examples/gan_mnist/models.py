@@ -12,15 +12,18 @@ class Discriminator(Model):
         self.layers = nn.Sequential(
             nn.Conv2d(1, 8, kernel_size=3, padding=1),
             nn.Conv2d(8, 8, kernel_size=3, padding=1),
+            nn.BatchNorm2d(8),
             nn.MaxPool2d(2),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Conv2d(8, 8, kernel_size=3, padding=1),
             nn.Conv2d(8, 8, kernel_size=3),
+            nn.BatchNorm2d(8),
             nn.MaxPool2d(2),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Conv2d(8, 8, kernel_size=3, padding=1),
+            nn.BatchNorm2d(8),
             nn.MaxPool2d(2),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Flatten(),
             nn.Linear(72, 1),
         )
@@ -29,7 +32,7 @@ class Discriminator(Model):
         return self.layers(x)
 
     def compile(self, loss_fn):
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=1e-5)
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=1e-4)
         self.loss_fn = loss_fn
         self.is_compiled = True
 
@@ -57,14 +60,19 @@ class Generator(Model):
             nn.Linear(16, 72),
             nn.Unflatten(-1, (8, 3, 3)),
             nn.ConvTranspose2d(8, 8, kernel_size=3, stride=1),
-            nn.ReLU(),
+            nn.BatchNorm2d(8),
+            nn.LeakyReLU(),
             nn.ConvTranspose2d(8, 8, kernel_size=4, stride=1),
-            nn.ReLU(),
+            nn.BatchNorm2d(8),
+            nn.LeakyReLU(),
             nn.ConvTranspose2d(8, 8, kernel_size=4, stride=1),
-            nn.ReLU(),
+            nn.BatchNorm2d(8),
+            nn.LeakyReLU(),
             nn.ConvTranspose2d(8, 8, kernel_size=3, stride=1),
-            nn.ReLU(),
+            nn.BatchNorm2d(8),
+            nn.LeakyReLU(),
             nn.ConvTranspose2d(8, 1, kernel_size=4, stride=2),
+            nn.BatchNorm2d(1),
             nn.Sigmoid(),
         )
         self.noise_dim = 16
