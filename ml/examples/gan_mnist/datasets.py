@@ -18,19 +18,18 @@ class NoiseDataset(Dataset):
 
 
 class MixedDataset(Dataset):
-    def __init__(self, real_data, fake_data, device):
+    def __init__(self, real_data, fake_data, device, seed=23):
+        manual_seed(seed)
         self.real_data = real_data.to(device)
         self.fake_data = fake_data.to(device)
         self.device = device
+        self.real_fake_flip = torch.randint(0, 2, (real_data.shape[0],)).bool()
 
     def __len__(self):
-        return self.fake_data.shape[0] + self.real_data.shape[0]
+        return self.real_data.shape[0]
 
     def __getitem__(self, idx):
-        if idx < self.real_data.shape[0]:
+        if self.real_fake_flip[idx]:
             return (self.real_data[idx], torch.ones(1).to(self.device))
         else:
-            return (
-                self.fake_data[idx - self.real_data.shape[0]],
-                torch.zeros(1).to(self.device),
-            )
+            return (self.fake_data[idx], torch.zeros(1).to(self.device))
