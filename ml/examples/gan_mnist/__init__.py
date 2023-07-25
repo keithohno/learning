@@ -37,6 +37,14 @@ def create_noise_dataloader(size, dim, seed=23):
     return gen_dataloader
 
 
+def plot_generator_output(generator, label):
+    generator.eval()
+    x_grid = generator.generate_data_from_noise(100).reshape(10, 10, 28, 28)
+    fig, _ = plot_image_grid(x_grid.cpu().detach())
+    fig.savefig(f"{DIR}/results/generated/{label}.png")
+    plt.close(fig)
+
+
 def run():
     manual_seed(23)
     train_mnist = MNIST("datasets", download=True, train=True)
@@ -57,7 +65,7 @@ def run():
         post_gen_loss_history = []
         pre_gen_acc_history = []
         post_gen_acc_history = []
-        for _ in tqdm(range(20)):
+        for epoch in tqdm(range(20)):
             # train discriminator
             train_disc_dataloader = create_mixed_dataloader(train_mnist, g_model)
             d_model.train()
@@ -98,6 +106,9 @@ def run():
             post_gen_loss_history.append(av_loss / len(test_disc_dataloader))
             post_gen_acc_history.append(av_acc / len(test_disc_dataloader))
 
+            # plot mid-training generator outputs
+            plot_generator_output(g_model, f"epoch_{epoch+1}")
+
         d_model.save(f"{DIR}/models")
         g_model.save(f"{DIR}/models")
 
@@ -117,10 +128,3 @@ def run():
         plt.ylabel("accuracy")
         fig.savefig(f"{DIR}/results/accuracy.png")
         plt.close(fig)
-
-    # plot images
-    g_model.eval()
-    x_grid = g_model.generate_data_from_noise(100).reshape(10, 10, 28, 28)
-    fig, _ = plot_image_grid(x_grid.cpu().detach())
-    fig.savefig(f"{DIR}/results/generated.png")
-    plt.close(fig)
