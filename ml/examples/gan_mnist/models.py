@@ -32,7 +32,7 @@ class Discriminator(Model):
         return self.layers(x)
 
     def compile(self, loss_fn):
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=1e-4)
+        self.optimizer = torch.optim.SGD(self.parameters(), lr=1e-2)
         self.loss_fn = loss_fn
         self.is_compiled = True
 
