@@ -32,15 +32,15 @@ class Discriminator(Model):
         return self.layers(x)
 
     def compile(self, loss_fn):
-        self.optimizer = torch.optim.SGD(self.parameters(), lr=1e-2)
+        self.optimizer = torch.optim.SGD(self.parameters(), lr=0.1)
         self.loss_fn = loss_fn
         self.is_compiled = True
 
-    def train_batch(self, x, y):
+    def train_batch(self, x, y) -> float:
         if not self.is_compiled:
             raise RuntimeError("Model must be compiled before training")
 
-        y_hat = self(x)
+        y_hat = self(x).squeeze()
         loss = self.loss_fn(y_hat, y)
         loss.backward()
         self.optimizer.step()
@@ -85,24 +85,18 @@ class Generator(Model):
         self.loss_fn = loss_fn
         self.is_compiled = True
 
-    def train_batch(self, z, y, discriminator):
+    def train_batch(self, z, y, discriminator) -> float:
         if not self.is_compiled:
             raise RuntimeError("Model must be compiled before training")
 
         x_hat = self(z)
-        y_hat = discriminator(x_hat)
+        y_hat = discriminator(x_hat).squeeze()
         loss = self.loss_fn(y_hat, y)
         loss.backward()
         self.optimizer.step()
         self.optimizer.zero_grad()
 
         return loss.item()
-
-    def generate_data_from_noise(self, size, seed=23):
-        manual_seed(seed)
-        device = next(self.parameters()).device
-        noise = torch.randn(size, self.noise_dim)
-        return self(noise.to(device))
 
     def id(self):
         return f"{self.__class__.__name__}"
