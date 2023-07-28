@@ -10,34 +10,37 @@ class Discriminator(Model):
         super().__init__()
         manual_seed(seed)
         self.layers = nn.Sequential(
-            nn.Conv2d(1, 8, kernel_size=3, padding=1),
-            nn.Conv2d(8, 8, kernel_size=3, padding=1),
-            nn.MaxPool2d(2),
-            nn.ReLU(),
-            nn.Conv2d(8, 8, kernel_size=3, padding=1),
-            nn.Conv2d(8, 8, kernel_size=3),
-            nn.MaxPool2d(2),
-            nn.ReLU(),
-            nn.Conv2d(8, 8, kernel_size=3, padding=1),
-            nn.MaxPool2d(2),
-            nn.ReLU(),
+            # 1 x 28 x 28
+            nn.Conv2d(1, 32, 4, 2, 1),
+            nn.BatchNorm2d(32),
+            nn.LeakyReLU(),
+            # 32 x 14 x 14
+            nn.Conv2d(32, 64, 4, 2, 1),
+            nn.BatchNorm2d(64),
+            nn.LeakyReLU(),
+            # 64 x 7 x 7
+            nn.Conv2d(64, 128, 4),
+            nn.BatchNorm2d(128),
+            nn.LeakyReLU(),
+            # 128 x 4 x 4
+            nn.Conv2d(128, 1, 4),
+            # 1 x 1 x 1
             nn.Flatten(),
-            nn.Linear(72, 1),
         )
 
     def forward(self, x):
         return self.layers(x)
 
     def compile(self, loss_fn):
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=1e-5)
+        self.optimizer = torch.optim.SGD(self.parameters(), lr=0.1)
         self.loss_fn = loss_fn
         self.is_compiled = True
 
-    def train_batch(self, x, y):
+    def train_batch(self, x, y) -> float:
         if not self.is_compiled:
             raise RuntimeError("Model must be compiled before training")
 
-        y_hat = self(x)
+        y_hat = self(x).squeeze()
         loss = self.loss_fn(y_hat, y)
         loss.backward()
         self.optimizer.step()
@@ -54,17 +57,21 @@ class Generator(Model):
         super().__init__()
         manual_seed(seed)
         self.layers = nn.Sequential(
-            nn.Linear(16, 72),
-            nn.Unflatten(-1, (8, 3, 3)),
-            nn.ConvTranspose2d(8, 8, kernel_size=3, stride=1),
-            nn.ReLU(),
-            nn.ConvTranspose2d(8, 8, kernel_size=4, stride=1),
-            nn.ReLU(),
-            nn.ConvTranspose2d(8, 8, kernel_size=4, stride=1),
-            nn.ReLU(),
-            nn.ConvTranspose2d(8, 8, kernel_size=3, stride=1),
-            nn.ReLU(),
-            nn.ConvTranspose2d(8, 1, kernel_size=4, stride=2),
+            nn.Unflatten(-1, (16, 1, 1)),
+            nn.ConvTranspose2d(16, 128, 4),
+            nn.BatchNorm2d(128),
+            nn.LeakyReLU(),
+            # 128 x 4 x 4
+            nn.ConvTranspose2d(128, 64, 4),
+            nn.BatchNorm2d(64),
+            nn.LeakyReLU(),
+            # 64 x 7 x 7
+            nn.ConvTranspose2d(64, 32, 4, 2, 1),
+            nn.BatchNorm2d(32),
+            nn.LeakyReLU(),
+            # 32 x 14 x 14
+            nn.ConvTranspose2d(32, 1, 4, 2, 1),
+            # 1 x 28 x 28
             nn.Sigmoid(),
         )
         self.noise_dim = 16
@@ -77,24 +84,18 @@ class Generator(Model):
         self.loss_fn = loss_fn
         self.is_compiled = True
 
-    def train_batch(self, z, y, discriminator):
+    def train_batch(self, z, y, discriminator) -> float:
         if not self.is_compiled:
             raise RuntimeError("Model must be compiled before training")
 
         x_hat = self(z)
-        y_hat = discriminator(x_hat)
+        y_hat = discriminator(x_hat).squeeze()
         loss = self.loss_fn(y_hat, y)
         loss.backward()
         self.optimizer.step()
         self.optimizer.zero_grad()
 
         return loss.item()
-
-    def generate_data_from_noise(self, size, seed=23):
-        manual_seed(seed)
-        device = next(self.parameters()).device
-        noise = torch.randn(size, self.noise_dim)
-        return self(noise.to(device))
 
     def id(self):
         return f"{self.__class__.__name__}"
