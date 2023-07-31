@@ -12,11 +12,12 @@ from .models import Discriminator, Generator
 
 DEVICE = get_device()
 DIR = get_dir(__file__)
+BATCH_SIZE = 128
 
 
 def plot_generator_output(generator, label):
     manual_seed(23)
-    noise = torch.randn(100, 16).to(DEVICE)
+    noise = torch.randn(100, generator.noise_dim).to(DEVICE)
     x_grid = generator(noise).reshape(10, 10, 28, 28)
     fig, _ = plot_image_grid(x_grid.cpu().detach())
     fig.savefig(f"{DIR}/results/generated/{label}.png")
@@ -30,12 +31,14 @@ def run():
 
     manual_seed(23)
     train_mnist = MNIST("datasets", download=True, train=True, transform=ToTensor())
-    train_mnist_dl = DataLoader(train_mnist, batch_size=32, shuffle=True)
+    train_mnist_dl = DataLoader(train_mnist, batch_size=BATCH_SIZE, shuffle=True)
     test_mnist = MNIST("datasets", download=True, train=False, transform=ToTensor())
-    test_mnist_dl = DataLoader(test_mnist, batch_size=32)
+    test_mnist_dl = DataLoader(test_mnist, batch_size=BATCH_SIZE)
 
     manual_seed(23)
-    noise = torch.randn(2, len(train_mnist_dl), 32, 16).to(DEVICE)
+    noise = torch.randn(2, len(train_mnist_dl), BATCH_SIZE, g_model.noise_dim).to(
+        DEVICE
+    )
 
     if d_model.can_load(f"{DIR}/models") and g_model.can_load(f"{DIR}/models"):
         d_model.load(f"{DIR}/models")
@@ -53,17 +56,17 @@ def run():
             for i, (x, _) in enumerate(train_mnist_dl):
                 # train discriminator on real data
                 d_model.train()
-                y = torch.ones(32).to(DEVICE)
+                y = torch.ones(len(x)).to(DEVICE)
                 d_model.train_batch(x.to(DEVICE), y.to(DEVICE).float())
 
                 # train discriminator on fake data
-                x_hat = g_model(noise[0][i])
-                y = torch.zeros(32).to(DEVICE)
+                x_hat = g_model(noise[0][i]).detach()
+                y = torch.zeros(BATCH_SIZE).to(DEVICE)
                 d_model.train_batch(x_hat, y)
 
                 # train generator
                 g_model.train()
-                y = torch.ones(32).to(DEVICE)
+                y = torch.ones(BATCH_SIZE).to(DEVICE)
                 g_model.train_batch(noise[1][i], y, d_model)
 
             # evaluate discriminator loss/acc
@@ -81,7 +84,7 @@ def run():
                     z = noise[0][i]
                     x = g_model(z)
                     y_hat = d_model(x_hat).squeeze()
-                    y = torch.zeros(32).to(DEVICE)
+                    y = torch.zeros(BATCH_SIZE).to(DEVICE)
                     av_loss += d_model.loss_fn(y_hat, y).item()
                     av_acc += y_hat.sigmoid().round().eq(y).float().mean().item()
 
@@ -97,7 +100,7 @@ def run():
                 for z in noise[1]:
                     x_hat = g_model(z)
                     y_hat = d_model(x_hat).squeeze()
-                    y = torch.ones(32).to(DEVICE)
+                    y = torch.ones(BATCH_SIZE).to(DEVICE)
                     av_loss += g_model.loss_fn(y_hat, y).item()
                 g_loss_history.append(av_loss / len(noise[1]))
 
