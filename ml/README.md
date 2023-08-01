@@ -1,19 +1,34 @@
 ## Setup
 
-Verified for Ubuntu 18.04 on WSL2. 
+Install miniconda and set up an environment:
 
-1. Install cuda drivers from Nvidia
-    * Note: the deb installation didn't work for me on Ubuntu 22.04
-2. Install Miniconda
-3. Set up an environment:
 ```
 conda create -p env
 conda activate ./env
-conda install pytorch torchvision torchaudio pytorch-cuda -c pytorch -c nvidia
+conda install pytorch torchvision torchaudio -c pytorch
 conda install matplotlib scikit-learn tqdm
 ```
 
+## GPU support
+
+This step is highly recommended if you have a GPU.
+
+### Nvidia
+
+Install the cuda drivers from the Nvidia website†, then add the pytorch-cuda package.
+
+```
+conda install pytorch-cuda -c nvidia
+```
+
+† I had issues with the .deb installation on newer versions of Ubuntu, but it worked on 18.04 LTS + WSL2
+
+### Apple (MPS)
+
+MPS support comes out of the box with the conda installation.
+
 ## Running examples
+
 ```
 conda activate ./env
 python main.py
