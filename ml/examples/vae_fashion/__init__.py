@@ -12,7 +12,7 @@ from .plots import (
     generate_latent_samples,
 )
 from common.plots import plot_normalized_loss_histories
-from helpers import manual_seed, get_dir
+from common.utils import manual_seed, get_dir
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 DIR = get_dir(__file__)

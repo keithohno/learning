@@ -1,7 +1,7 @@
 import torch
 
 from common.models.mixins import SaveLoadMixin
-from helpers import manual_seed
+from common.utils import manual_seed
 
 
 class Model(torch.nn.Module, SaveLoadMixin):

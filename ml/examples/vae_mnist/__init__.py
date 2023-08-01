@@ -4,7 +4,7 @@ from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
 from tqdm import tqdm
 
-from helpers import manual_seed
+from common.utils import manual_seed
 from .models import VAEv1, VAEv2, VAEv3, VAEv4
 from .analysis import (
     generate_mean_reconstructions,

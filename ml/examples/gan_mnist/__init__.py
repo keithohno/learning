@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 from common.plots import plot_line_graphs, plot_image_grid
-from helpers import get_device, get_dir, manual_seed
+from common.utils import get_device, get_dir, manual_seed
 from .models import Discriminator, Generator
 
 DEVICE = get_device()

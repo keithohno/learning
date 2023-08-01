@@ -2,7 +2,7 @@ import torch
 from torch import nn
 
 from common.models import Model
-from helpers import manual_seed
+from common.utils import manual_seed
 
 
 def init_weights(m):

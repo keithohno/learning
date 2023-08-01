@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import matplotlib.pylab as pl
 
-from helpers import manual_seed
+from common.utils import manual_seed
 from common.plots import plot_image_grid
 
 

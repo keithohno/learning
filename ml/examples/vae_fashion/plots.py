@@ -2,7 +2,7 @@ import torch
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 
-from helpers import manual_seed
+from common.utils import manual_seed
 from common.plots import plot_image_grid
 
 

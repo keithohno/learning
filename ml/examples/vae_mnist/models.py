@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from helpers import manual_seed
+from common.utils import manual_seed
 from common.models import Model
 
 
