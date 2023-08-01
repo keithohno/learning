@@ -1,13 +1,16 @@
+import glob2
+import matplotlib.pyplot as plt
+import PIL
 import torch
 from torch import nn
+from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
-from torch.utils.data import DataLoader
-import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-from common.plots import plot_line_graphs, plot_image_grid
+from common.plots import plot_image_grid, plot_line_graphs
 from common.utils import get_device, get_dir, manual_seed
+
 from .models import Discriminator, Generator
 
 DEVICE = get_device()
@@ -22,6 +25,18 @@ def plot_generator_output(generator, label):
     fig, _ = plot_image_grid(x_grid.cpu().detach())
     fig.savefig(f"{DIR}/results/generated/{label}.png")
     plt.close(fig)
+
+
+def create_gif():
+    files = glob2.glob(f"{DIR}/results/generated/*.png")
+    imgs = [PIL.Image.open(f) for f in files]
+    imgs[0].save(
+        f"{DIR}/results/generated.gif",
+        append_images=imgs[1:],
+        format="GIF",
+        save_all=True,
+        duration=200,
+    )
 
 
 def run():
@@ -122,3 +137,5 @@ def run():
         plt.ylabel("accuracy")
         fig.savefig(f"{DIR}/results/accuracy.png")
         plt.close(fig)
+
+    create_gif()
