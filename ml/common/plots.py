@@ -1,6 +1,6 @@
-import torch
-import matplotlib.pyplot as plt
 import matplotlib.pylab as pl
+import matplotlib.pyplot as plt
+import torch
 
 
 def plot_image_grid(tensor):
@@ -37,7 +37,7 @@ def plot_normalized_loss_histories(loss_histories, labels):
     return fig
 
 
-def plot_loss_histories(loss_histories, labels):
+def plot_loss_histories(loss_histories, labels) -> plt.Figure:
     """
     Plot loss charts for multiple models
     """

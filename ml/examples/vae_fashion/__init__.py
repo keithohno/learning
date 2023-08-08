@@ -1,18 +1,20 @@
 import torch
+from matplotlib import pyplot as plt
+from torch.utils.data import DataLoader
 from torchvision.datasets import FashionMNIST
 from torchvision.transforms import ToTensor
-from torch.utils.data import DataLoader
-from matplotlib import pyplot as plt
 from tqdm import tqdm
 
+from common.plots import plot_normalized_loss_histories
+from common.utils import get_dir, manual_seed
+
+from . import experiment_beta
 from .models import VAEv1, VAEv2
 from .plots import (
     generate_latent_lerp,
-    generate_reconstruction_lerp,
     generate_latent_samples,
+    generate_reconstruction_lerp,
 )
-from common.plots import plot_normalized_loss_histories
-from common.utils import manual_seed, get_dir
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 DIR = get_dir(__file__)
@@ -59,6 +61,8 @@ def run_model_group(models, train_dataset, test_dataset, epochs, seed=23):
 
 
 def run():
+    experiment_beta.run()
+
     train_dataset = FashionMNIST(
         root="datasets",
         train=True,
